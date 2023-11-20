@@ -13,9 +13,10 @@ void drivePID(int desiredValue, int timeout=1500)
 	double totalError = 0;
 	int count = 0;
 
-	double kP = 0.75;
-	double kI = 0.000575; 
-	double kD = 3.3;
+	double kP;
+	double kI;
+	double kD;
+
 	double maxI = 500;
 	
 	int integralThreshold = 150;
@@ -36,11 +37,28 @@ void drivePID(int desiredValue, int timeout=1500)
 		initialValue = initialValue - 360;
 	}
 
+
+	if (desiredValue <= 4000){
+		kP = 0.275;
+		kI = 0.0007;
+		kD = 1.2489;
+	}
+	else if (desiredValue <= 1000){
+	 	kP = 0.75;
+	 	kI = 0.000575; 
+		kD = 3.3;
+	}
+	else {
+		kP = 0.27;
+		kI = 0.0007;
+		kD = 1.248;
+	}
+
 	while (enableDrivePID)
 	{
 
 		if (time > timeout){
-			enableDrivePID = false;
+			//enableDrivePID = false;
 		}
 
 		// get position of all motors:
@@ -105,7 +123,7 @@ void drivePID(int desiredValue, int timeout=1500)
 
 		if (count > 20)
 		{
-			enableDrivePID = false;
+			//enableDrivePID = false;
 		}
 
 		delay(20);
@@ -129,6 +147,7 @@ void turnPID(int desiredValue, int timeout=1500)
 	double kP = 8;
 	double kI = 0.0001; 
 	double kD = 30;
+
 	double maxI = 500;
 
 	int time = 0;
@@ -165,38 +184,6 @@ void turnPID(int desiredValue, int timeout=1500)
 			turnV = (position + desiredValue);
 		}
 	}
-
-	// if (abs(turnV)<10){
-	// 	//constants
-	// }
-	// else if (abs(turnV < 20)){
-	// 	//constants
-	// }
-	// else if (abs(turnV < 30)){
-	// 	//constants
-	// }
-	// else if (abs(turnV < 40)){
-	// 	//constants
-	// }
-	// else if (abs(turnV < 50)){
-	// 	//constants
-	// }
-	// else if (abs(turnV < 70)){
-	// 	//constants
-	// }
-	// else if (abs(turnV <= 50)){
-	// 	kP = 8;
-	// 	kI = 0; 
-	// 	kD = 0;
-	// }
-	// else if (abs(turnV <= 90)){
-	// 	kP = 8;
-	// 	kI = 0.0001; 
-	// 	kD = 30;
-	// }
-
-	//tune distances
-	//test intervals
 
 
 	while (enableTurnPID)
@@ -308,10 +295,39 @@ void offSide()
 
 void autonSkills()
 {
-	drivePID(100, 100);
+	cata.move(100);
+}
+
+void onSide()
+{
+	drivePID(2500);
+	turnPID(80);
+	intake.move(-127);
+	delay(1000);
+	drivePID(-500);
+	turnPID(-113);
+	intake.move(127);
+	drivePID(400);
+	delay(500);
+	turnPID(80);
+	intake.move(-127);
+	delay(500);
+	drivePID(500);
+	turnPID(-40);
+	intake.move(127);
+	drivePID(700);
+	delay(500);
+	turnPID(90);
+	intake.move(-127);
+	delay(50);
+	wings.set_value(true);
+	blocker.move_relative(1500, 127);
+	drivePID(2500, 500);
+	drivePID(-1000);
+	turnPID(0);
 }
 
 void skipAutonomous()
 {
-	con.rumble("..........");
+	turnPID(-90);
 }
