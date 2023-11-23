@@ -38,12 +38,12 @@ void drivePID(int desiredValue, int timeout=1500)
 	}
 
 
-	if (desiredValue <= 4000){
+	if (abs(desiredValue) <= 4000){
 		kP = 0.275;
 		kI = 0.0007;
 		kD = 1.2489;
 	}
-	else if (desiredValue <= 1000){
+	else if (abs(desiredValue) <= 1000){
 	 	kP = 0.75;
 	 	kI = 0.000575; 
 		kD = 3.3;
@@ -58,7 +58,7 @@ void drivePID(int desiredValue, int timeout=1500)
 	{
 
 		if (time > timeout){
-			//enableDrivePID = false;
+			enableDrivePID = false;
 		}
 
 		// get position of all motors:
@@ -71,7 +71,7 @@ void drivePID(int desiredValue, int timeout=1500)
 		if (currentIMUValue > 180){
 			currentIMUValue = currentIMUValue - 360;
 		}
-		double headingCorrection = initialValue -currentIMUValue;
+		double headingCorrection = initialValue - currentIMUValue;
 		headingCorrection = headingCorrection * 5;
 
 
@@ -108,27 +108,28 @@ void drivePID(int desiredValue, int timeout=1500)
 			speed = -127;
 		}
 
-		leftChassis.move(speed - headingCorrection);
-		rightChassis.move(speed + headingCorrection);
+		leftChassis.move(speed + headingCorrection);
+		rightChassis.move(speed - headingCorrection);
 
-		con.print(0,0, "error: %f", float(error));
 
 
 		prevError = error;
 
-		if (error < 10)
+		if (abs(error) < 20)
 		{
 			count++;
 		}
 
-		if (count > 20)
+		if (count > 50)
 		{
-			//enableDrivePID = false;
+			enableDrivePID = false;
 		}
 
-		delay(20);
+		time = time + 20; //add one to time every cycle
 
-		time++; //add one to time every cycle
+		con.print(0,0, "hc: %f", float(headingCorrection));
+
+		delay(20);
 		
 	}
 
@@ -144,9 +145,9 @@ void turnPID(int desiredValue, int timeout=1500)
 	double position;
 	double turnV;
 
-	double kP = 8;
-	double kI = 0.0001; 
-	double kD = 30;
+	double kP = 7;
+	double kI = 0.0000000001; 
+	double kD = 28;
 
 	double maxI = 500;
 
@@ -185,6 +186,7 @@ void turnPID(int desiredValue, int timeout=1500)
 		}
 	}
 
+	delay(5);
 
 	while (enableTurnPID)
 	{
@@ -194,7 +196,7 @@ void turnPID(int desiredValue, int timeout=1500)
 
 		// get avg of motors:
 		position = inertial.get_heading();
-		if (position > 180){
+		if (position > 180){ //make only > if not working
 			position = ((360-position) * -1);
 		}
 
@@ -244,7 +246,7 @@ void turnPID(int desiredValue, int timeout=1500)
 
 		prevError = error;
 
-		if (error < 5)
+		if (abs(error) < 5)
 		{
 			count++;
 		}
@@ -255,7 +257,7 @@ void turnPID(int desiredValue, int timeout=1500)
 		}
 
 		delay(20);
-		time++;
+		time = time + 20;
 	}
 
 	chassis.move(0);
@@ -265,32 +267,32 @@ void turnPID(int desiredValue, int timeout=1500)
 
 void offSide()
 {
-	inertial.set_heading(315);
-	zoneMech.set_value(true);
-	delay(1000);
-	drivePID(-300);
-	turnPID(-90);
-	delay(500);
-	turnPID(90);
-	zoneMech.set_value(false);
-	blocker.move_relative(500, 127);
-	drivePID(2100);
-	intake.move(127);
-	drivePID(500);
-	delay(500);
-	turnPID(80);
-	intake.move(-127);
-	delay(500);
-	drivePID(500);
-	turnPID(-40);
-	intake.move(127);
-	drivePID(700);
-	delay(500);
-	turnPID(90);
-	intake.move(-127);
-	delay(50);
-	wings.set_value(true);
-	drivePID(2500);
+	// inertial.set_heading(315);
+	// zoneMech.set_value(true);
+	// delay(1000);
+	// drivePID(-300);
+	// turnPID(-90);
+	// delay(500);
+	// turnPID(90);
+	// zoneMech.set_value(false);
+	// blocker.move_relative(500, 127);
+	// drivePID(2100);
+	// intake.move(127);
+	// drivePID(500);
+	// delay(500);
+	// turnPID(80);
+	// intake.move(-127);
+	// delay(500);
+	// drivePID(500);
+	// turnPID(-40);
+	// intake.move(127);
+	// drivePID(700);
+	// delay(500);
+	// turnPID(90);
+	// intake.move(-127);
+	// delay(50);
+	// wings.set_value(true);
+	// drivePID(2500);
 }
 
 void autonSkills()
@@ -300,34 +302,42 @@ void autonSkills()
 
 void onSide()
 {
-	drivePID(2500);
-	turnPID(80);
-	intake.move(-127);
-	delay(1000);
-	drivePID(-500);
-	turnPID(-113);
-	intake.move(127);
-	drivePID(400);
-	delay(500);
-	turnPID(80);
-	intake.move(-127);
-	delay(500);
-	drivePID(500);
-	turnPID(-40);
-	intake.move(127);
-	drivePID(700);
-	delay(500);
-	turnPID(90);
-	intake.move(-127);
-	delay(50);
-	wings.set_value(true);
-	blocker.move_relative(1500, 127);
-	drivePID(2500, 500);
-	drivePID(-1000);
-	turnPID(0);
+	// drivePID(2500);
+	// turnPID(80);
+	// intake.move(-127);
+	// delay(1000);
+	// drivePID(-500);
+	// turnPID(-113);
+	// intake.move(127);
+	// drivePID(400);
+	// delay(500);
+	// turnPID(80);
+	// intake.move(-127);
+	// delay(500);
+	// drivePID(500);
+	// turnPID(-40);
+	// intake.move(127);
+	// drivePID(700);
+	// delay(500);
+	// turnPID(90);
+	// intake.move(-127);
+	// delay(50);
+	// wings.set_value(true);
+	// blocker.move_relative(1500, 127);
+	// drivePID(2500, 500);
+	// drivePID(-1000);
+	// turnPID(0);
 }
 
 void skipAutonomous()
 {
-	turnPID(-90);
+	intake.move(127);
+	drivePID(100);
+	turnPID(180);
+	drivePID(1500);
+// 	delay(10);
+// 	turnPID(135);
+// 	drivePID(800);
+// 	turnPID(90);
+// 	drivePID(1000);
 }
