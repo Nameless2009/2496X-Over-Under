@@ -411,6 +411,7 @@ void onSide()
 
 void skipAutonomous()
 {
+	//auton skills:
 	turnPID(-20);
 	drivePID(100);
 	cata.move(127);
