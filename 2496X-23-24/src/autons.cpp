@@ -30,23 +30,21 @@ void drivePID(int desiredValue, int timeout=1500)
 
 	// inertial.tare_heading();
 
-	con.clear();
-
 	double initialValue = inertial.get_heading();
 	if (initialValue > 180){
 		initialValue = initialValue - 360;
 	}
 
 
-	if (abs(desiredValue) <= 4000){
-		kP = 0.275;
-		kI = 0.0007;
-		kD = 1.2489;
-	}
-	else if (abs(desiredValue) <= 1000){
+	if (abs(desiredValue) <= 1000){
 	 	kP = 0.75;
 	 	kI = 0.000575; 
 		kD = 3.3;
+	}
+	else if (abs(desiredValue) <= 4000){
+		kP = 0.275;
+		kI = 0.0007;
+		kD = 1.2489;
 	}
 	else {
 		kP = 0.27;
@@ -68,8 +66,15 @@ void drivePID(int desiredValue, int timeout=1500)
 		int BLpos = chassis_BL.get_position();
 
 		double currentIMUValue = inertial.get_heading();
-		if (currentIMUValue > 180){
-			currentIMUValue = currentIMUValue - 360;
+		if(initialValue > 120){
+			currentIMUValue = inertial.get_heading();
+		} else if (initialValue < -120){
+			currentIMUValue = inertial.get_heading() - 360;
+		} else {
+   			currentIMUValue = inertial.get_heading();
+   			if(currentIMUValue > 180){
+      			currentIMUValue = currentIMUValue - 360;
+			} 
 		}
 		double headingCorrection = initialValue - currentIMUValue;
 		headingCorrection = headingCorrection * 5;
@@ -108,8 +113,8 @@ void drivePID(int desiredValue, int timeout=1500)
 			speed = -127;
 		}
 
-		leftChassis.move(speed + headingCorrection);
-		rightChassis.move(speed - headingCorrection);
+		leftChassis.move(speed - headingCorrection);
+		rightChassis.move(speed + headingCorrection);
 
 
 
@@ -120,14 +125,12 @@ void drivePID(int desiredValue, int timeout=1500)
 			count++;
 		}
 
-		if (count > 50)
+		if (count > 35)
 		{
 			enableDrivePID = false;
 		}
 
 		time = time + 20; //add one to time every cycle
-
-		con.print(0,0, "hc: %f", float(headingCorrection));
 
 		delay(20);
 		
@@ -147,7 +150,7 @@ void turnPID(int desiredValue, int timeout=1500)
 
 	double kP = 7;
 	double kI = 0.0000000001; 
-	double kD = 28;
+	double kD = 30;
 
 	double maxI = 500;
 
@@ -155,7 +158,6 @@ void turnPID(int desiredValue, int timeout=1500)
 	
 	int integralThreshold = 30;
 
-	con.clear();
 
 	chassis.set_brake_modes(E_MOTOR_BRAKE_BRAKE);
 
@@ -180,13 +182,12 @@ void turnPID(int desiredValue, int timeout=1500)
 	else if ((desiredValue > 0) && (position < 0)) {
 		if ((desiredValue - position) >= 180){
 			position = inertial.get_heading();
+			turnV = 360 - desiredValue - abs(position);
 		}
 		else {
 			turnV = (position + desiredValue);
 		}
 	}
-
-	delay(5);
 
 	while (enableTurnPID)
 	{
@@ -213,6 +214,7 @@ void turnPID(int desiredValue, int timeout=1500)
 		else if ((desiredValue > 0) && (position < 0)) {
 			if ((desiredValue - position) >= 180){
 				position = inertial.get_heading();
+				turnV = 360 - desiredValue - abs(position);
 			}
 			else {
 				turnV = (position + desiredValue); //for different constants for pid
@@ -238,7 +240,6 @@ void turnPID(int desiredValue, int timeout=1500)
 			totalError = max(totalError, -maxI);
 		}
 
-		con.print(0,0, "error: %f", float(error));
 
 		double speed = (error * kP + derivative * kD + totalError * kI);
 		rightChassis.move(speed);
@@ -267,6 +268,44 @@ void turnPID(int desiredValue, int timeout=1500)
 
 void offSide()
 {
+	
+	//elims offside
+	// drivePID(2500);
+	// turnPID(90);
+	// wings.set_value(true);
+	// drivePID(1500, 2000);
+	// turnPID(0);
+	// drivePID(-1200);
+	// turnPID(90);
+	// drivePID(-2500);
+	// turnPID(0);
+	// intake.move(-127);
+	// delay(300);
+	// turnPID(180);
+	// drivePID(-700, 1000);
+	
+	
+	//new offside:
+	inertial.set_heading(315);
+	zoneMech.set_value(true);
+	turnPID(-90);
+	turnPID(-30);
+	drivePID(800);
+	turnPID(0);
+	intake.move(-127);
+	delay(500);
+	turnPID(180);
+	drivePID(-500, 1000);
+	drivePID(500);
+	turnPID(135);
+	drivePID(1000);
+	turnPID(90);
+	drivePID(2000);
+	
+
+
+
+	//old offside:
 	// inertial.set_heading(315);
 	// zoneMech.set_value(true);
 	// delay(1000);
@@ -302,6 +341,47 @@ void autonSkills()
 
 void onSide()
 {
+	
+	// new onside part 1 and 2:
+	
+	intake.move(127);
+	drivePID(500);
+	turnPID(180);
+	drivePID(1700);
+	turnPID(135);
+	drivePID(1200);
+	turnPID(90);
+	intake.move(-127);
+	drivePID(1000, 1000);
+	drivePID(-1000);
+
+	turnPID(0);
+	drivePID(1200);
+	turnPID(20);
+	intake.move(127);
+	drivePID(1350);
+	turnPID(140);
+	intake.move(-127);
+	delay(300);
+	drivePID(500);
+	turnPID(50);
+	intake.move(127);
+	drivePID(1000);
+	turnPID(180);
+	intake.move(-127);
+	wings.set_value(true);
+	drivePID(2000);
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//old onside:
+
 	// drivePID(2500);
 	// turnPID(80);
 	// intake.move(-127);
@@ -331,13 +411,33 @@ void onSide()
 
 void skipAutonomous()
 {
-	intake.move(127);
+	turnPID(-20);
 	drivePID(100);
+	cata.move(127);
+	delay(33000);
+	while(catalimit.get_value()==false){
+		cata.move(100);
+	}
+	cata.move(0);
+	turnPID(20);
+	drivePID(-800);
+	turnPID(0);
+	drivePID(-4000);
+	turnPID(-45);
+	drivePID(-1000);
+	turnPID(-80);
+	drivePID(-3000, 1300); //give massive distance and tell to timeout for ramming (u need to time the distance needed)
+	drivePID(300);
+	turnPID(0);
+	drivePID(2300);
+	turnPID(90);
+	drivePID(1300);
 	turnPID(180);
+	wings.set_value(true);
+	drivePID(1500, 2000);
+	wings.set_value(false);
+	drivePID(-1000);
+	turnPID(150);
+	wings.set_value(true);
 	drivePID(1500);
-// 	delay(10);
-// 	turnPID(135);
-// 	drivePID(800);
-// 	turnPID(90);
-// 	drivePID(1000);
 }
