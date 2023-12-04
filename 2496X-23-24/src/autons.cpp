@@ -412,16 +412,17 @@ void onSide()
 void skipAutonomous()
 {
 	//auton skills:
-	turnPID(-20);
+	intake.move(-127);
+	turnPID(-17);
 	drivePID(100);
 	cata.move(127);
-	delay(33000);
+	delay(30000);
 	while(catalimit.get_value()==false){
 		cata.move(100);
 	}
 	cata.move(0);
 	turnPID(20);
-	drivePID(-800);
+	drivePID(-900); 
 	turnPID(0);
 	drivePID(-4000);
 	turnPID(-45);
@@ -432,13 +433,15 @@ void skipAutonomous()
 	turnPID(0);
 	drivePID(2300);
 	turnPID(90);
-	drivePID(1300);
-	turnPID(180);
+	drivePID(750);
+	turnPID(160);
 	wings.set_value(true);
 	drivePID(1500, 2000);
 	wings.set_value(false);
-	drivePID(-1000);
-	turnPID(150);
+	turnPID(-140);
+	drivePID(-1300);
+	turnPID(180);
 	wings.set_value(true);
-	drivePID(1500);
+	drivePID(1700, 2000);
+	drivePID(-1000);
 }
