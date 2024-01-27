@@ -7,10 +7,11 @@
 
 
 using namespace pros;
+using namespace std;
 
-void drivePID(int desiredValue, int timeout=1500);
+void drivePID(int desiredValue, int timeout=1500, string debug="off");
 
-void turnPID(int desiredValue, int timeout=1500);
+void turnPID(int desiredValue, int timeout=1500, string turnType="point", string debug="off");
 
 void offSide();
 

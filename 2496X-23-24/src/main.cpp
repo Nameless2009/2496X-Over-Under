@@ -6,55 +6,29 @@ using namespace glb;
 using namespace pros;
 using namespace std;
 
+void chassisCode(){
+	double leftstick = con.get_analog(E_CONTROLLER_ANALOG_LEFT_Y);
+	double rightstick = con.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y);
 
-bool startCata = false;
-bool stopCata = false;
-bool antiJamOverride = false;
-bool matchLoadingMode = false;
-bool wingsToggle = false;
-bool intakeLifterValue = true;
-bool half = false;
+	rightChassis.move(rightstick);
+	leftChassis.move(leftstick);
+}
+void intakeCode(){
+	if (con.get_digital(E_CONTROLLER_DIGITAL_L1)){
+		intake.move(127);
+	}
+	else if (con.get_digital(E_CONTROLLER_DIGITAL_L2)){
+		intake.move(-127);
+	}
+	else{
+		intake.move(0);
+	}
+}
+
 
 bool onside = false;
 bool offside = false;
 bool skillsAuton = false;
-
-
-
-void cataCycle(){
-	if (matchLoadingMode == false){
-		if (startCata == true){
-			cata.move(127);
-		}
-		else{
-			cata.move(0);
-		}
-
-		if (stopCata == true){
-			cata.move(0);
-			stopCata = false;
-		}
-	}
-	else if (matchLoadingMode == true){
-		cata.move(120);
-	}
-}
-
-void refresh(){
-    if (con.get_digital_new_press(E_CONTROLLER_DIGITAL_L1)){
-        startCata = !startCata;
-    }
-    if (catalimit.get_new_press()){
-        stopCata = true;
-        startCata = false;
-    }
-}
-
-void cataCode(){
-    refresh();
-    cataCycle();
-}
-
 
 /**
  * A callback function for LLEMU's center button.
@@ -111,10 +85,6 @@ void on_right_button()
 void initialize()
 {
 	pros::lcd::initialize();
-
-	blocker.set_brake_modes(E_MOTOR_BRAKE_HOLD);
-	wings.set_value(false);
-
 	
 	pros::lcd::set_text(1, "Left Button: ONSIDE");
 	pros::lcd::set_text(2, "Center Button: OFFSIDE");
@@ -124,6 +94,8 @@ void initialize()
 	pros::lcd::register_btn0_cb(on_left_button);
 	pros::lcd::register_btn1_cb(on_center_button);
 	pros::lcd::register_btn2_cb(on_right_button);
+
+	chassis.set_brake_modes(E_MOTOR_BRAKE_COAST);
 }
 
 /**
@@ -185,57 +157,12 @@ void autonomous() {
  */
 void opcontrol()
 {
-	wings.set_value(true);
 
 	while (true)
 	{
-		double rightstick = con.get_analog(E_CONTROLLER_ANALOG_LEFT_Y);
-		double leftstick = con.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y);
-
-		chassis_FR.move(rightstick);
-		chassis_BR.move(rightstick);
-		chassis_FL.move(leftstick);
-		chassis_BL.move(leftstick);
-
-        cataCode();
-
-		if (con.get_digital_new_press(E_CONTROLLER_DIGITAL_UP)){
-			matchLoadingMode = !matchLoadingMode;
-		}
-
-		if (con.get_digital_new_press(E_CONTROLLER_DIGITAL_L2)){
-			wingsToggle = !wingsToggle;
-		}
-		if (wingsToggle==false){
-			wings.set_value(false);
-		}else {
-			wings.set_value(true);
-		}
-
-		if (con.get_digital(E_CONTROLLER_DIGITAL_LEFT)){
-			blockerLeft.move(127);
-			blockerRight.move(127);
-		}
-		else if(con.get_digital(E_CONTROLLER_DIGITAL_RIGHT)){
-			blockerLeft.move(-127);
-			blockerRight.move(-127);
-		}
-		else{
-			blockerLeft.move(0);
-			blockerRight.move(0);
-		}
-
-
-		if (con.get_digital(E_CONTROLLER_DIGITAL_R1)){
-			intake.move(127);
-		}
-		else if (con.get_digital(E_CONTROLLER_DIGITAL_R2)){
-			intake.move(-127);
-		}
-		else {
-			intake.move(0);
-		}
-		delay(2);
+		
+		chassisCode();
+		intakeCode();
 
 	}
 }
