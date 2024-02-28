@@ -10,14 +10,15 @@ using namespace pros;
 
 namespace glb {
 
-    #define P_FL 1
-    #define P_FR 2
-    #define P_ML 3
-    #define P_MR 4
-    #define P_BL 5
-    #define P_BR 6
-    #define P_imu 7
-    #define P_intake 8 
+    #define P_FL 4
+    #define P_FR 6
+    #define P_ML 5
+    #define P_MR 1
+    #define P_BL 8
+    #define P_BR 9
+    #define P_imu 21
+    #define P_intake 3 
+    #define P_slapper 10
 
 
     extern Motor FR;
@@ -28,6 +29,13 @@ namespace glb {
     extern Motor BL;
 
     extern Motor intake;
+
+    extern Motor slapper;
+
+    extern ADIDigitalOut frontLeftWing;
+    extern ADIDigitalOut frontRightWing;
+    extern ADIDigitalOut backLeftWing;
+    extern ADIDigitalOut backRightWing;
 
     extern Imu inertial;
 

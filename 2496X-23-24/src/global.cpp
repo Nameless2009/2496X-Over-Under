@@ -12,6 +12,13 @@ namespace glb {
     Motor BL(P_BL, E_MOTOR_GEAR_600, true);
 
     Motor intake(P_intake, E_MOTOR_GEAR_600, true);
+    
+    Motor slapper(P_slapper, E_MOTOR_GEAR_200, true);
+
+    ADIDigitalOut frontLeftWing('A', false);
+    ADIDigitalOut frontRightWing('B', false);
+    ADIDigitalOut backLeftWing('C', false);
+    ADIDigitalOut backRightWing('D', false);
 
     Imu inertial(P_imu);
 

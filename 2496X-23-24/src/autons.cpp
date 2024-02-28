@@ -1,10 +1,51 @@
 #include "main.h"
 #include "global.h"
+#include <cmath>
+#include <limits>
 
 using namespace pros;
 using namespace glb;
 using namespace std;
 
+constexpr double gear_ratio = ((double)36/45);
+constexpr double wheel_radius = 1.375;
+constexpr double wheel_circumference = 2* M_PI * wheel_radius;
+constexpr double start_heading = 0;
+
+
+class Point {
+	public:
+		float x;
+		float y;
+
+		float theta = numeric_limits<float>::quiet_NaN(); //if theta is not a real number, quiet the errors
+
+
+		//Constructor
+		Point(float x, float y, float theta = numeric_limits<float>::quiet_NaN())
+		:	x(x),
+			y(y),
+			theta(theta) {}
+
+
+		//function that returns the distance between two points
+		float distanceTo(const Point& other) const{
+			float deltaX = x - other.x;
+			float deltaY = y - other.y;
+			return sqrt(deltaX * deltaX + deltaY * deltaY);
+			// distance formula ^
+		}
+
+		//function that converts degrees to radians (multiply by pi and divide by 180)
+		float degreesToRadians(float degrees){
+			return degrees * M_PI / 180.0;
+		}
+
+		//function that calculates the angular error
+		float angleError(const Point& other) {
+			return other.theta - theta;
+		}
+};
 
 void drivePID(int desiredValue, int timeout=1500, string debug="off")
 {
@@ -286,7 +327,98 @@ void turnPID(int desiredValue, int timeout=1500, string turnType="point", string
 	chassis.move(0);
 }
 
+float integral;
+float prevError;
+float kP;
+float kI;
+float kD;
 
+float calculatePID(float error){
+
+	if (abs(error) <= 1000){
+		kP = 0.75;
+		kI = 0.000575; 
+		kD = 3.3;
+	}
+	else if (abs(error) <= 4000){
+		kP = 0.275;
+		kI = 0.0007;
+		kD = 1.2489;
+	}
+	else {
+		kP = 0.27;
+		kI = 0.0007;
+		kD = 1.248;
+	}
+	
+	// calculate integral
+    integral += error;
+
+    // calculate derivative
+    float derivative = error - prevError;
+    prevError = error;
+
+    // calculate output
+    return (error * kP) + integral * kI + derivative * kD;
+
+}
+
+// void boomerang(float x, float y, float theta, float dlead){
+
+// 	float integral;
+	
+// 	float linearError;
+// 	float linearPower;
+// 	float angularError;
+// 	float angularPower;
+
+// 	bool angularSettled;
+// 	bool linearSettled;
+
+// 	double x = 0;
+// 	double y = 0;
+
+// 	chassis.tare_position();
+
+// 	Point calculations(0,0); //do not use functions that require x and y with this object!!!
+
+// 	//calculate target point in standard form
+// 	float radiansTheta = calculations.degreesToRadians(theta);
+// 	Point target(x, y, M_PI_2 - radiansTheta);
+
+// 	while (!angularSettled && !linearSettled){
+
+// 		double heading = fmod((360 - inertial.get_heading()) + start_heading, 360);
+// 		// the float remainder of parameter 1 divided by parameter 2
+
+// 		double FRpos = FR.get_position();
+// 		double FLpos = FL.get_position();
+// 		double BRpos = BR.get_position();
+// 		double BLpos = BL.get_position();
+// 		double MRpos = MR.get_position();
+// 		double MLpos = ML.get_position();
+
+// 		double average_encoder_position = (FRpos + MRpos + BRpos + FLpos + MLpos + BLpos)/6; 
+		
+// 		double distance_travelled = (average_encoder_position / 360) * wheel_circumference * gear_ratio;
+		
+// 		Point robot(/*robot x value*/, /*robot x value*/);
+		
+// 		float d = robot.distanceTo(target);
+		
+// 		Point carrot(target.x - d*cos(theta) * dlead, target.y - d*sin(theta)*dlead);
+
+
+
+// 		linearError = robot.distanceTo(target);
+// 		linearPower = linear //update pid values (use calculation function)
+// 		angularError = robot.angleError(theta);
+// 		//same for angular power
+
+
+// 		delay(10);
+// 	}
+// }
 
 void offSide()
 {

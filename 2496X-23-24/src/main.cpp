@@ -6,6 +6,8 @@ using namespace glb;
 using namespace pros;
 using namespace std;
 
+bool slapperToggle = false;
+
 void chassisCode(){
 	double leftstick = con.get_analog(E_CONTROLLER_ANALOG_LEFT_Y);
 	double rightstick = con.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y);
@@ -13,6 +15,7 @@ void chassisCode(){
 	rightChassis.move(rightstick);
 	leftChassis.move(leftstick);
 }
+
 void intakeCode(){
 	if (con.get_digital(E_CONTROLLER_DIGITAL_L1)){
 		intake.move(127);
@@ -22,6 +25,52 @@ void intakeCode(){
 	}
 	else{
 		intake.move(0);
+	}
+}
+
+void slapperCode(){
+	if (con.get_digital_new_press(E_CONTROLLER_DIGITAL_A)){
+		slapperToggle = !slapperToggle;
+	}
+
+	if (slapperToggle) {
+		slapper.move(127);
+	}
+	else {
+		slapper.move(0);
+	}
+}
+
+void wingsCode(){
+	if (con.get_digital(E_CONTROLLER_DIGITAL_L1)){
+		backRightWing.set_value(true);
+	}
+	else {
+		backRightWing.set_value(false);
+	}
+
+
+	if (con.get_digital(E_CONTROLLER_DIGITAL_L2)){
+		backLeftWing.set_value(true);
+	}
+	else {
+		backLeftWing.set_value(false);
+	}
+
+
+	if (con.get_digital(E_CONTROLLER_DIGITAL_DOWN)){
+		frontLeftWing.set_value(true);
+	}
+	else {
+		frontLeftWing.set_value(false);
+	}
+
+
+	if (con.get_digital(E_CONTROLLER_DIGITAL_B)){
+		frontRightWing.set_value(true);
+	}
+	else {
+		frontRightWing.set_value(false);
 	}
 }
 
@@ -163,6 +212,8 @@ void opcontrol()
 		
 		chassisCode();
 		intakeCode();
+		slapperCode();
+		wingsCode();
 
 	}
 }
