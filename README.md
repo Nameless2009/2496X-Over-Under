@@ -1,5 +1,7 @@
-# 2496X-23-24 - Version 1
+# 2496x
 
-To-Do List/Notes:
-- Finish Driver Control Code
-- Tune PID (Astronomical P!!!)
+to-do list/notes:
+- finish driver control
+- tune pid (high p)
+- circle arc turn (keej)
+- boomerang?
