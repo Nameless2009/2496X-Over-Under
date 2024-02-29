@@ -13,7 +13,7 @@ namespace glb {
     #define P_FL 4
     #define P_FR 6
     #define P_ML 5
-    #define P_MR 1
+    #define P_MR 7
     #define P_BL 8
     #define P_BR 9
     #define P_imu 21
@@ -36,6 +36,9 @@ namespace glb {
     extern ADIDigitalOut frontRightWing;
     extern ADIDigitalOut backLeftWing;
     extern ADIDigitalOut backRightWing;
+
+    extern ADIDigitalOut pto;
+    extern ADIDigitalOut hangPiston;
 
     extern Imu inertial;
 

@@ -7,10 +7,20 @@ using namespace pros;
 using namespace std;
 
 bool slapperToggle = false;
+int hangSequence = 0;
 
 void chassisCode(){
 	double leftstick = con.get_analog(E_CONTROLLER_ANALOG_LEFT_Y);
 	double rightstick = con.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y);
+
+	if (rightstick > 0 && leftstick < 0){
+		rightstick = 0.7*rightstick;
+		leftstick = 0.7*leftstick;
+	}
+	else if (rightstick < 0 && leftstick > 0){
+		rightstick = 0.7*rightstick;
+		leftstick = 0.7*leftstick;
+	}
 
 	rightChassis.move(rightstick);
 	leftChassis.move(leftstick);
@@ -71,6 +81,27 @@ void wingsCode(){
 	}
 	else {
 		frontRightWing.set_value(false);
+	}
+}
+
+void hangCode(){
+	if (con.get_digital_new_press(E_CONTROLLER_DIGITAL_A)){
+		hangSequence++;
+	}
+
+	if (hangSequence == 1){
+		hangPiston.set_value(true);
+	}
+	else if (hangSequence == 2){
+		pto.set_value(false);
+	}
+	else if (hangSequence == 3){
+		chassis.move(127);
+		delay(1000);
+		chassis.move(0);
+	}
+	else {
+		hangSequence = 0;
 	}
 }
 

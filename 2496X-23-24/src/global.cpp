@@ -20,6 +20,9 @@ namespace glb {
     ADIDigitalOut backLeftWing('C', false);
     ADIDigitalOut backRightWing('D', false);
 
+    ADIDigitalOut pto('E', true);
+    ADIDigitalOut hangPiston('F', false);
+
     Imu inertial(P_imu);
 
     Motor_Group rightChassis({P_FR, P_MR, P_BR});
