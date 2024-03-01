@@ -10,10 +10,10 @@ using namespace pros;
 
 namespace glb {
 
-    #define P_FL 4
-    #define P_FR 6
-    #define P_ML 5
-    #define P_MR 7
+    #define P_FL 6
+    #define P_FR 4
+    #define P_ML 7
+    #define P_MR 5
     #define P_BL 8
     #define P_BR 9
     #define P_imu 21

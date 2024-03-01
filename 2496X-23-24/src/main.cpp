@@ -10,16 +10,16 @@ bool slapperToggle = false;
 int hangSequence = 0;
 
 void chassisCode(){
-	double leftstick = con.get_analog(E_CONTROLLER_ANALOG_LEFT_Y);
-	double rightstick = con.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y);
+	double rightstick = con.get_analog(E_CONTROLLER_ANALOG_LEFT_Y);
+	double leftstick = con.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y);
 
 	if (rightstick > 0 && leftstick < 0){
-		rightstick = 0.7*rightstick;
-		leftstick = 0.7*leftstick;
+		rightstick = 0.85*rightstick;
+		leftstick = 0.85*leftstick;
 	}
 	else if (rightstick < 0 && leftstick > 0){
-		rightstick = 0.7*rightstick;
-		leftstick = 0.7*leftstick;
+		rightstick = 0.85*rightstick;
+		leftstick = 0.85*leftstick;
 	}
 
 	rightChassis.move(rightstick);

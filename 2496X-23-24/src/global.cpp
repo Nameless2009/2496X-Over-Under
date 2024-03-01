@@ -4,12 +4,12 @@ using namespace pros;
 
 namespace glb {
 
-    Motor FR(P_FR, E_MOTOR_GEAR_600, false);
-    Motor FL(P_FL, E_MOTOR_GEAR_600, true);
-    Motor MR(P_MR, E_MOTOR_GEAR_600, false);
-    Motor ML(P_ML, E_MOTOR_GEAR_600, true);
-    Motor BR(P_BR, E_MOTOR_GEAR_600, false);
-    Motor BL(P_BL, E_MOTOR_GEAR_600, true);
+    Motor FR(P_FR, E_MOTOR_GEAR_600, true);
+    Motor FL(P_FL, E_MOTOR_GEAR_600, false);
+    Motor MR(P_MR, E_MOTOR_GEAR_600, true);
+    Motor ML(P_ML, E_MOTOR_GEAR_600, false);
+    Motor BR(P_BR, E_MOTOR_GEAR_600, true);
+    Motor BL(P_BL, E_MOTOR_GEAR_600, false);
 
     Motor intake(P_intake, E_MOTOR_GEAR_600, true);
     
