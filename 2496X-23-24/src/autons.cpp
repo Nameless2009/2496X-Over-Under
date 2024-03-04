@@ -68,27 +68,35 @@ void drivePID(int desiredValue, int timeout=1500, string debug="off")
 
 	// inertial.tare_heading();
 
-	double initialValue = inertial.get_heading();
-	if (initialValue > 180){
-		initialValue = initialValue - 360;
-	}
+	// double initialValue = inertial.get_heading();
+	// if (initialValue > 180){
+	// 	initialValue = initialValue - 360;
+	// }
 
 
 	if (abs(desiredValue) <= 1000){
-		kP = 0.75;
-		kI = 0.000575; 
-		kD = 3.3;
-	}
-	else if (abs(desiredValue) <= 4000){
-		kP = 0.275;
-		kI = 0.0007;
-		kD = 1.2489;
-	}
-	else {
-		kP = 0.27;
+		kP = 0.57;
 		kI = 0.0007;
 		kD = 1.248;
 	}
+	else if (abs(desiredValue) <= 3000){
+		kP = 0.57;
+		kI = 0.0007;
+		kD = 1.248;
+	}
+	// else if (abs(desiredValue <= 3000)){
+	// 	kP = 0;
+	// 	kI = 0;
+	// 	kD = 0;
+	// }
+	// else {
+	// 	kP = 0;
+	// 	kI = 0;
+	// 	kD = 0;
+	// }
+
+	con.clear();
+
 
 	while (enableDrivePID)
 	{
@@ -105,19 +113,20 @@ void drivePID(int desiredValue, int timeout=1500, string debug="off")
 		int MRpos = MR.get_position();
 		int MLpos = ML.get_position();
 
-		double currentIMUValue = inertial.get_heading();
-		if(initialValue > 120){
-			currentIMUValue = inertial.get_heading();
-		} else if (initialValue < -120){
-			currentIMUValue = inertial.get_heading() - 360;
-		} else {
-   			currentIMUValue = inertial.get_heading();
-   			if(currentIMUValue > 180){
-      			currentIMUValue = currentIMUValue - 360;
-			} 
-		}
-		double headingCorrection = initialValue - currentIMUValue;
-		headingCorrection = headingCorrection * 5;
+		// double currentIMUValue = inertial.get_heading();
+		// if(initialValue > 120){
+		// 	currentIMUValue = inertial.get_heading();
+		// } else if (initialValue < -120){
+		// 	currentIMUValue = inertial.get_heading() - 360;
+		// } else {
+   		// 	currentIMUValue = inertial.get_heading();
+   		// 	if(currentIMUValue > 180){
+      	// 		currentIMUValue = currentIMUValue - 360;
+		// 	} 
+		// }
+		// double headingCorrection = initialValue - currentIMUValue;
+		// headingCorrection = headingCorrection * 5;
+		double headingCorrection = 0;
 
 
 
@@ -156,26 +165,29 @@ void drivePID(int desiredValue, int timeout=1500, string debug="off")
 		leftChassis.move(speed - headingCorrection);
 		rightChassis.move(speed + headingCorrection);
 
-		if (debug == "off"){
-			//do nothing
-		}
-		else if (debug == "debug"){
-			con.clear();
-			con.print(0,0, "error: %f", float(error));
-		}
+		con.print(0,0, "error: %f", float(error));
 
 
 		prevError = error;
 
-		if (abs(error) < 20)
+		if (abs(error) < 30)
 		{
 			count++;
 		}
 
-		if (count > 35)
-		{
-			enableDrivePID = false;
+		if (desiredValue <= 1000){
+			if (count > 8)
+			{
+				enableDrivePID = false;
+			}
 		}
+		else if (desiredValue <= 2000){
+			if (count > 8)
+			{
+				//enableDrivePID = false;
+			}
+		}
+		
 
 		time = time + 20; //add one to time every cycle
 
@@ -327,11 +339,13 @@ void turnPID(int desiredValue, int timeout=1500, string turnType="point", string
 	chassis.move(0);
 }
 
-float integral;
+float totalError;
 float prevError;
 float kP;
 float kI;
 float kD;
+int integralThreshold = 30;
+double maxI = 500;
 
 float calculatePID(float error){
 
@@ -352,15 +366,61 @@ float calculatePID(float error){
 	}
 	
 	// calculate integral
-    integral += error;
+	if (abs(error) < integralThreshold)
+	{
+		totalError += error;
+	}
 
     // calculate derivative
     float derivative = error - prevError;
     prevError = error;
 
     // calculate output
-    return (error * kP) + integral * kI + derivative * kD;
+    double speed = (error * kP) + (totalError * kI) + (derivative * kD);
 
+	if (speed > 127){
+		speed = 127;
+	}
+	else if (speed < -127){
+		speed = -127;
+	}
+
+	return speed;
+
+}
+
+void rightArc(double radius, int centralDegreeTheta, int timeout=1500){
+
+	//central degree is in radians
+
+	double centerArc = radius*centralDegreeTheta; 
+
+	double rightArc = (radius - 5)*centralDegreeTheta;
+	double leftArc = (radius + 5)*centralDegreeTheta;
+
+	double speedProp = rightArc/leftArc;
+
+	FL.tare_position();
+
+	int count;
+
+	while(count < 3){
+
+		double error = leftArc - FL.get_position();
+
+		// leftChassis.move(calculatePID(error));
+		// rightChassis.move((calculatePID(error))*speedProp);
+
+		leftChassis.move(127);
+		rightChassis.move(127*speedProp);
+
+		if (abs(error) < 30)
+		{
+			count++;
+		}
+
+	}
+	chassis.move(0);
 }
 
 // void boomerang(float x, float y, float theta, float dlead){
@@ -437,5 +497,5 @@ void onSide()
 
 void skipAutonomous()
 {
-
+	rightArc(10, 1);
 }

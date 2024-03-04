@@ -220,6 +220,7 @@ void autonomous() {
 	else { //if nothing was clicked
 		skipAutonomous();      
 	}
+	
 }
 
 /**
