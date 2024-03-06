@@ -66,34 +66,29 @@ void drivePID(int desiredValue, int timeout=1500, string debug="off")
 
 	chassis.tare_position();
 
-	// inertial.tare_heading();
+	inertial.tare_heading();
 
-	// double initialValue = inertial.get_heading();
-	// if (initialValue > 180){
-	// 	initialValue = initialValue - 360;
-	// }
+	double initialValue = inertial.get_heading();
+	if (initialValue > 180){
+		initialValue = initialValue - 360;
+	}
 
 
 	if (abs(desiredValue) <= 1000){
+		kP = 0.41;
+		kI = 0.0007;
+		kD = 1.27;
+	}
+	else if (abs(desiredValue) <= 4000){
 		kP = 0.57;
 		kI = 0.0007;
-		kD = 1.248;
+		kD = 1.27;
 	}
-	else if (abs(desiredValue) <= 3000){
-		kP = 0.57;
+	else {
+		kP = 0.76;
 		kI = 0.0007;
-		kD = 1.248;
+		kD = 1.27;
 	}
-	// else if (abs(desiredValue <= 3000)){
-	// 	kP = 0;
-	// 	kI = 0;
-	// 	kD = 0;
-	// }
-	// else {
-	// 	kP = 0;
-	// 	kI = 0;
-	// 	kD = 0;
-	// }
 
 	con.clear();
 
@@ -113,20 +108,19 @@ void drivePID(int desiredValue, int timeout=1500, string debug="off")
 		int MRpos = MR.get_position();
 		int MLpos = ML.get_position();
 
-		// double currentIMUValue = inertial.get_heading();
-		// if(initialValue > 120){
-		// 	currentIMUValue = inertial.get_heading();
-		// } else if (initialValue < -120){
-		// 	currentIMUValue = inertial.get_heading() - 360;
-		// } else {
-   		// 	currentIMUValue = inertial.get_heading();
-   		// 	if(currentIMUValue > 180){
-      	// 		currentIMUValue = currentIMUValue - 360;
-		// 	} 
-		// }
-		// double headingCorrection = initialValue - currentIMUValue;
-		// headingCorrection = headingCorrection * 5;
-		double headingCorrection = 0;
+		double currentIMUValue = inertial.get_heading();
+		if(initialValue > 120){
+			currentIMUValue = inertial.get_heading();
+		} else if (initialValue < -120){
+			currentIMUValue = inertial.get_heading() - 360;
+		} else {
+   			currentIMUValue = inertial.get_heading();
+   			if(currentIMUValue > 180){
+      			currentIMUValue = currentIMUValue - 360;
+			} 
+		}
+		double headingCorrection = initialValue - currentIMUValue;
+		headingCorrection = headingCorrection * 5;
 
 
 
@@ -207,9 +201,9 @@ void turnPID(int desiredValue, int timeout=1500, string turnType="point", string
 	double position;
 	double turnV;
 
-	double kP = 7;
+	double kP = 5.6;
 	double kI = 0.0000000001; 
-	double kD = 30;
+	double kD = 25;
 
 	double maxI = 500;
 
@@ -389,7 +383,7 @@ float calculatePID(float error){
 
 }
 
-void rightArc(double radius, int centralDegreeTheta, int timeout=1500){
+void leftArc(double radius, int centralDegreeTheta, int timeout=1500){
 
 	//central degree is in radians
 
@@ -400,24 +394,95 @@ void rightArc(double radius, int centralDegreeTheta, int timeout=1500){
 
 	double speedProp = rightArc/leftArc;
 
-	FL.tare_position();
+	chassis.tare_position();
+	chassis.set_brake_modes(E_MOTOR_BRAKE_BRAKE);
 
-	int count;
+	int count =0;
+	int time =0;
 
-	while(count < 3){
+	while(1){
+		
+		if (time > timeout){
+			break;
+		}
 
-		double error = leftArc - FL.get_position();
+		int FRpos = FR.get_position();
+		int FLpos = FL.get_position();
+		int BRpos = BR.get_position();
+		int BLpos = BL.get_position();
+		int MRpos = MR.get_position();
+		int MLpos = ML.get_position();
 
-		// leftChassis.move(calculatePID(error));
-		// rightChassis.move((calculatePID(error))*speedProp);
+		int currentLeftPosition = (FLpos + BLpos + MLpos)/3;
+		int error = leftArc - currentLeftPosition;
 
-		leftChassis.move(127);
-		rightChassis.move(127*speedProp);
+		leftChassis.move((calculatePID(error)));
+		rightChassis.move(((calculatePID(error))*speedProp));
 
-		if (abs(error) < 30)
+		if (abs(error) < 10)
 		{
 			count++;
 		}
+
+		if (count > 100){
+			break;
+		}
+
+		delay(20);
+		time = time+20;
+
+	}
+	chassis.move(0);
+}
+
+void rightArc(double radius, int centralDegreeTheta, int timeout=1500){
+
+	
+	//central degree is in radians
+
+	double centerArc = radius*centralDegreeTheta; 
+
+	double rightArc = (radius + 5)*centralDegreeTheta;
+	double leftArc = (radius - 5)*centralDegreeTheta;
+
+	double speedProp = leftArc/rightArc;
+
+	chassis.tare_position();
+	chassis.set_brake_modes(E_MOTOR_BRAKE_BRAKE);
+
+	int count =0;
+	int time =0;
+
+	while(1){
+		
+		if (time > timeout){
+			//break;
+		}
+
+		int FRpos = FR.get_position();
+		int FLpos = FL.get_position();
+		int BRpos = BR.get_position();
+		int BLpos = BL.get_position();
+		int MRpos = MR.get_position();
+		int MLpos = ML.get_position();
+
+		int currentRightPosition = (FRpos + BRpos + MRpos)/3;
+		int error = rightArc - currentRightPosition;
+
+		rightChassis.move((calculatePID(error)));
+		leftChassis.move(((calculatePID(error))*speedProp));
+
+		if (abs(error) < 10)
+		{
+			count++;
+		}
+
+		if (count > 100){
+			//break;
+		}
+
+		delay(20);
+		time = time+20;
 
 	}
 	chassis.move(0);
@@ -497,5 +562,5 @@ void onSide()
 
 void skipAutonomous()
 {
-	rightArc(10, 1);
+	turnPID(180);
 }

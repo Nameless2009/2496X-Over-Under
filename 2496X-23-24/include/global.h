@@ -16,7 +16,7 @@ namespace glb {
     #define P_MR 5
     #define P_BL 8
     #define P_BR 9
-    #define P_imu 21
+    #define P_imu 11
     #define P_intake 3 
     #define P_slapper 10
 

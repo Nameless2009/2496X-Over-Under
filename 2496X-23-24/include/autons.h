@@ -13,6 +13,12 @@ void drivePID(int desiredValue, int timeout=1500, string debug="off");
 
 void turnPID(int desiredValue, int timeout=1500, string turnType="point", string debug="off");
 
+float calculatePID(float error);
+
+void rightArc(double radius, int centralDegreeTheta, int timeout=1500);
+
+void leftArc(double radius, int centralDegreeTheta, int timeout=1500);
+
 void offSide();
 
 void onSide();
@@ -20,7 +26,6 @@ void onSide();
 void autonSkills();
 
 void skipAutonomous();
-
 
 
 #endif
