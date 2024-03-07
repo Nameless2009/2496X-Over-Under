@@ -159,8 +159,6 @@ void drivePID(int desiredValue, int timeout=1500, string debug="off")
 		leftChassis.move(speed - headingCorrection);
 		rightChassis.move(speed + headingCorrection);
 
-		con.print(0,0, "error: %f", float(error));
-
 
 		prevError = error;
 
@@ -178,7 +176,7 @@ void drivePID(int desiredValue, int timeout=1500, string debug="off")
 		else if (desiredValue <= 2000){
 			if (count > 8)
 			{
-				//enableDrivePID = false;
+				enableDrivePID = false;
 			}
 		}
 		
@@ -466,11 +464,17 @@ void rightArc(double radius, int centralDegreeTheta, int timeout=1500){
 		int MRpos = MR.get_position();
 		int MLpos = ML.get_position();
 
+		int heading = inertial.get_heading();
+
 		int currentRightPosition = (FRpos + BRpos + MRpos)/3;
 		int error = rightArc - currentRightPosition;
 
-		rightChassis.move((calculatePID(error)));
-		leftChassis.move(((calculatePID(error))*speedProp));
+		// double rightcorrect = (currentRightPosition * 360) / (2*M_PI*radius);
+		// int fix = int(heading - rightcorrect);
+		// fix = fix*5;
+
+		rightChassis.move((calculatePID(error)) /*+ fix*/);
+		leftChassis.move(((calculatePID(error))*speedProp) /*- fix*/);
 
 		if (abs(error) < 10)
 		{
@@ -562,5 +566,24 @@ void onSide()
 
 void skipAutonomous()
 {
-	turnPID(180);
+	//onside
+	intake.move(-127); //intake is reversed for some reason
+	drivePID(3000);
+	turnPID(-60);
+	inertial.set_heading(0);
+	drivePID(-1500);
+	drivePID(400);
+	turnPID(-90);
+	drivePID(2500);
+	turnPID(-100);
+	intake.move(127);
+	delay(100);
+	turnPID(90);
+	intake.move(-127);
+	drivePID(1300);
+	turnPID(3);
+	drivePID(-1500);
+	rightArc(10, -500);
+
+
 }
