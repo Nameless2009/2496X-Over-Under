@@ -44,7 +44,7 @@ void slapperCode(){
 	}
 
 	if (slapperToggle) {
-		slapper.move(127);
+		slapper.move(100);
 	}
 	else {
 		slapper.move(0);
@@ -52,7 +52,7 @@ void slapperCode(){
 }
 
 void wingsCode(){
-	if (con.get_digital(E_CONTROLLER_DIGITAL_L1)){
+	if (con.get_digital(E_CONTROLLER_DIGITAL_R1)){
 		backRightWing.set_value(true);
 	}
 	else {
@@ -60,7 +60,7 @@ void wingsCode(){
 	}
 
 
-	if (con.get_digital(E_CONTROLLER_DIGITAL_L2)){
+	if (con.get_digital(E_CONTROLLER_DIGITAL_R2)){
 		backLeftWing.set_value(true);
 	}
 	else {

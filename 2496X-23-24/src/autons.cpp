@@ -47,7 +47,7 @@ class Point {
 		}
 };
 
-void drivePID(int desiredValue, int timeout=1500, string debug="off")
+void drivePID(int desiredValue, int timeout=1500, string createTask="off", int taskStart=0, int taskEnd=0, string debug="off")
 {
 	bool enableDrivePID = true;
 	int prevError = 0;
@@ -90,7 +90,8 @@ void drivePID(int desiredValue, int timeout=1500, string debug="off")
 		kD = 1.27;
 	}
 
-	con.clear();
+	bool taskStarted = false;
+	bool taskEnded = false;
 
 
 	while (enableDrivePID)
@@ -121,8 +122,6 @@ void drivePID(int desiredValue, int timeout=1500, string debug="off")
 		}
 		double headingCorrection = initialValue - currentIMUValue;
 		headingCorrection = headingCorrection * 5;
-
-
 
 		// get avg of motors:
 		int currentValue = (FRpos + BRpos + FLpos + BLpos + MRpos + MLpos) / 6;
@@ -179,6 +178,52 @@ void drivePID(int desiredValue, int timeout=1500, string debug="off")
 				enableDrivePID = false;
 			}
 		}
+		else {
+			if (count > 8){
+				enableDrivePID = false;
+			}
+		}
+
+		if (time >= taskStart && taskStarted == false){
+			if (createTask == "frontWings"){
+				frontLeftWing.set_value(true);
+				frontRightWing.set_value(true);
+				taskStarted == true;
+			}
+			else if (createTask == "backWings"){
+				backLeftWing.set_value(true);
+				backRightWing.set_value(true);
+				taskStarted == true;
+			}
+			else if (createTask == "reverseIntake"){
+				intake.move(127);
+				taskStarted == true;
+			}
+			else if (createTask == "forwardIntake"){
+				intake.move(-127);
+				taskStarted == true;
+			}
+		}
+		if (time >= taskEnd && taskEnded == false){
+			if (createTask == "frontWings"){
+				frontLeftWing.set_value(false);
+				frontRightWing.set_value(false);
+				taskEnded == true;
+			}
+			else if (createTask == "backWings"){
+				backLeftWing.set_value(false);
+				backRightWing.set_value(false);
+				taskEnded == true;
+			}
+			else if (createTask == "reverseIntake"){
+				intake.move(0);
+				taskEnded == true;
+			}
+			else if (createTask == "forwardIntake"){
+				intake.move(0);
+				taskEnded == true;
+			}
+		}
 		
 
 		time = time + 20; //add one to time every cycle
@@ -199,9 +244,9 @@ void turnPID(int desiredValue, int timeout=1500, string turnType="point", string
 	double position;
 	double turnV;
 
-	double kP = 5.6;
-	double kI = 0.0000000001; 
-	double kD = 25;
+	double kP = 3.6;
+	double kI = 0.0000001;
+	double kD = 13.4;
 
 	double maxI = 500;
 
@@ -211,6 +256,11 @@ void turnPID(int desiredValue, int timeout=1500, string turnType="point", string
 
 
 	chassis.set_brake_modes(E_MOTOR_BRAKE_BRAKE);
+
+	if (debug == "debug"){
+		con.clear();
+	}
+	
 
 	//inertial.tare_heading();
 
@@ -308,7 +358,6 @@ void turnPID(int desiredValue, int timeout=1500, string turnType="point", string
 			//do nothing
 		}
 		else if (debug == "debug"){
-			con.clear();
 			con.print(0,0, "error: %f", float(error));
 		}
 
@@ -319,7 +368,7 @@ void turnPID(int desiredValue, int timeout=1500, string turnType="point", string
 			count++;
 		}
 
-		if (count > 30)
+		if (count > 10)
 		{
 			enableTurnPID = false;
 		}
@@ -381,14 +430,16 @@ float calculatePID(float error){
 
 }
 
-void leftArc(double radius, int centralDegreeTheta, int timeout=1500){
+void leftArc(double radius, double centralDegreeTheta, int timeout=1500, string createTask="off", int taskStart=0, int taskEnd=0){
 
 	//central degree is in radians
 
 	double centerArc = radius*centralDegreeTheta; 
 
-	double rightArc = (radius - 5)*centralDegreeTheta;
-	double leftArc = (radius + 5)*centralDegreeTheta;
+	double rightArc = (radius - 265)*centralDegreeTheta;
+	double leftArc = (radius + 265)*centralDegreeTheta;
+
+	// make 5 inches into encoder ticks and make it so that one side is added 10 or so and the other side is added 0, so the arc is for the left side, not the center of the bot
 
 	double speedProp = rightArc/leftArc;
 
@@ -397,6 +448,11 @@ void leftArc(double radius, int centralDegreeTheta, int timeout=1500){
 
 	int count =0;
 	int time =0;
+
+	bool taskStarted = false;
+	bool taskEnded = false;
+
+	int heading = inertial.get_heading();
 
 	while(1){
 		
@@ -414,8 +470,24 @@ void leftArc(double radius, int centralDegreeTheta, int timeout=1500){
 		int currentLeftPosition = (FLpos + BLpos + MLpos)/3;
 		int error = leftArc - currentLeftPosition;
 
-		leftChassis.move((calculatePID(error)));
-		rightChassis.move(((calculatePID(error))*speedProp));
+		double leftcorrect = (currentLeftPosition * 360) / (2*M_PI*(-radius));
+
+		if(leftcorrect > 120){
+			heading = inertial.get_heading();
+		} else if (leftcorrect < -120){
+			heading = inertial.get_heading() - 360;
+		} else {
+   			heading = inertial.get_heading();
+   			if(heading > 180){
+      			heading = heading - 360;
+			} 
+		}
+
+		int fix = int(heading + leftcorrect);
+		fix = fix*5;
+
+		leftChassis.move((calculatePID(error)) - fix);
+		rightChassis.move(((calculatePID(error))*speedProp) + fix);
 
 		if (abs(error) < 10)
 		{
@@ -426,6 +498,47 @@ void leftArc(double radius, int centralDegreeTheta, int timeout=1500){
 			break;
 		}
 
+		if (time >= taskStart && taskStarted == false){
+			if (createTask == "frontWings"){
+				frontLeftWing.set_value(true);
+				frontRightWing.set_value(true);
+				taskStarted == true;
+			}
+			else if (createTask == "backWings"){
+				backLeftWing.set_value(true);
+				backRightWing.set_value(true);
+				taskStarted == true;
+			}
+			else if (createTask == "reverseIntake"){
+				intake.move(127);
+				taskStarted == true;
+			}
+			else if (createTask == "forwardIntake"){
+				intake.move(-127);
+				taskStarted == true;
+			}
+		}
+		if (time >= taskEnd && taskEnded == false){
+			if (createTask == "frontWings"){
+				frontLeftWing.set_value(false);
+				frontRightWing.set_value(false);
+				taskEnded == true;
+			}
+			else if (createTask == "backWings"){
+				backLeftWing.set_value(false);
+				backRightWing.set_value(false);
+				taskEnded == true;
+			}
+			else if (createTask == "reverseIntake"){
+				intake.move(0);
+				taskEnded == true;
+			}
+			else if (createTask == "forwardIntake"){
+				intake.move(0);
+				taskEnded == true;
+			}
+		}		
+
 		delay(20);
 		time = time+20;
 
@@ -433,15 +546,15 @@ void leftArc(double radius, int centralDegreeTheta, int timeout=1500){
 	chassis.move(0);
 }
 
-void rightArc(double radius, int centralDegreeTheta, int timeout=1500){
+void rightArc(double radius, double centralDegreeTheta, int timeout=1500, string createTask="off", int taskStart=0, int taskEnd=0){
 
 	
 	//central degree is in radians
 
 	double centerArc = radius*centralDegreeTheta; 
 
-	double rightArc = (radius + 5)*centralDegreeTheta;
-	double leftArc = (radius - 5)*centralDegreeTheta;
+	double rightArc = (radius + 265)*centralDegreeTheta;
+	double leftArc = (radius - 265)*centralDegreeTheta;
 
 	double speedProp = leftArc/rightArc;
 
@@ -451,10 +564,15 @@ void rightArc(double radius, int centralDegreeTheta, int timeout=1500){
 	int count =0;
 	int time =0;
 
+	int heading = inertial.get_heading();
+
+	bool taskStarted = false;
+	bool taskEnded = false;
+
 	while(1){
 		
 		if (time > timeout){
-			//break;
+			break;
 		}
 
 		int FRpos = FR.get_position();
@@ -464,25 +582,77 @@ void rightArc(double radius, int centralDegreeTheta, int timeout=1500){
 		int MRpos = MR.get_position();
 		int MLpos = ML.get_position();
 
-		int heading = inertial.get_heading();
-
 		int currentRightPosition = (FRpos + BRpos + MRpos)/3;
+		int currentLeftPosition = (FLpos + BLpos + MLpos)/3;
 		int error = rightArc - currentRightPosition;
 
-		// double rightcorrect = (currentRightPosition * 360) / (2*M_PI*radius);
-		// int fix = int(heading - rightcorrect);
-		// fix = fix*5;
+		double rightcorrect = (currentRightPosition * 360) / (2*M_PI*(-radius));
 
-		rightChassis.move((calculatePID(error)) /*+ fix*/);
-		leftChassis.move(((calculatePID(error))*speedProp) /*- fix*/);
+		if(rightcorrect > 120){
+			heading = inertial.get_heading();
+		} else if (rightcorrect < -120){
+			heading = inertial.get_heading() - 360;
+		} else {
+   			heading = inertial.get_heading();
+   			if(heading > 180){
+      			heading = heading - 360;
+			} 
+		}
 
-		if (abs(error) < 10)
+		int fix = int(heading + rightcorrect);
+		fix = fix*5;
+
+		rightChassis.move((calculatePID(error)) + fix);
+		leftChassis.move(((calculatePID(error))*speedProp) - fix);
+
+		if (abs(error) < 30)
 		{
 			count++;
 		}
 
-		if (count > 100){
-			//break;
+		if (count > 3){
+			break;
+		}
+
+		if (time >= taskStart && taskStarted == false){
+			if (createTask == "frontWings"){
+				frontLeftWing.set_value(true);
+				frontRightWing.set_value(true);
+				taskStarted == true;
+			}
+			else if (createTask == "backWings"){
+				backLeftWing.set_value(true);
+				backRightWing.set_value(true);
+				taskStarted == true;
+			}
+			else if (createTask == "reverseIntake"){
+				intake.move(127);
+				taskStarted == true;
+			}
+			else if (createTask == "forwardIntake"){
+				intake.move(-127);
+				taskStarted == true;
+			}
+		}
+		if (time >= taskEnd && taskEnded == false){
+			if (createTask == "frontWings"){
+				frontLeftWing.set_value(false);
+				frontRightWing.set_value(false);
+				taskEnded == true;
+			}
+			else if (createTask == "backWings"){
+				backLeftWing.set_value(false);
+				backRightWing.set_value(false);
+				taskEnded == true;
+			}
+			else if (createTask == "reverseIntake"){
+				intake.move(0);
+				taskEnded == true;
+			}
+			else if (createTask == "forwardIntake"){
+				intake.move(0);
+				taskEnded == true;
+			}
 		}
 
 		delay(20);
@@ -564,26 +734,77 @@ void onSide()
 	
 }
 
+void openWingsHalfway(void*){
+	delay(1000);
+	intake.move(-127);
+	backLeftWing.set_value(true);
+	backRightWing.set_value(true);
+}
+
 void skipAutonomous()
 {
 	//onside
-	intake.move(-127); //intake is reversed for some reason
-	drivePID(3000);
-	turnPID(-60);
-	inertial.set_heading(0);
-	drivePID(-1500);
-	drivePID(400);
-	turnPID(-90);
-	drivePID(2500);
-	turnPID(-100);
-	intake.move(127);
-	delay(100);
-	turnPID(90);
+	// intake.move(-127); //intake is reversed for some reason
+	// drivePID(3000);
+	// turnPID(-60);
+	// inertial.set_heading(0);
+	// drivePID(-1500);
+	// drivePID(400);
+	// turnPID(-90);
+	// drivePID(2500);
+	// turnPID(-100);
+	// intake.move(127);
+	// delay(150);
+	// turnPID(90);
+	// intake.move(-127);
+	// drivePID(1300);
+	// turnPID(3);
+	// drivePID(-1500);
+	// rightArc(10, -500);
+	// rightArc(7, 700);
+	// intake.move(127);
+	
+	//6ball
 	intake.move(-127);
-	drivePID(1300);
-	turnPID(3);
-	drivePID(-1500);
-	rightArc(10, -500);
+	drivePID(2500);
+	drivePID(-2800);
+	turnPID(60);
+	intake.move(127);
+	delay(300);
+	turnPID(-76);
+	inertial.tare();
+	intake.move(-127);
+	drivePID(1270);
+	drivePID(-1280);
+	backLeftWing.set_value(true);
+	rightArc(900, -4);
+	drivePID(500);
+	turnPID(180);
+	intake.move(127);
+	delay(200);
+	drivePID(1000, 500);
+	drivePID(-800);
+	turnPID(-70);
+	drivePID(2000);
+
+	//prog skills
+	// rightArc(1500, -1);
+	// rightArc(350, 2.19);
+	// drivePID(-200);
+	// //slapper.move(127);
+	// delay(1000);
+	// rightArc(1500, 1.8);
+	// frontLeftWing.set_value(true);
+	// frontRightWing.set_value(true);
+	// intake.move(-127);
+	// drivePID(2000);
+	// drivePID(-1000);
+	// drivePID(1000);
+	// drivePID(-500);
+	// turnPID(80);
+	// drivePID(1200);
+	// leftArc(295, 2.78);
+	// drivePID(3500);
 
 
 }
