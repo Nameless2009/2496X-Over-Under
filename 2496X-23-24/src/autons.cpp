@@ -895,12 +895,12 @@ void skipAutonomous()
 	turnPID(180);
 	drivePID(-2000);
 	drivePID(1500);
-	turnPID(-90);
+	turnPID(-100);
 	drivePID(800);
-	rightArc(200, 120);
+	rightArc(100, 160);
 	frontLeftWing.set_value(true);
 	frontRightWing.set_value(true);
-	drivePID(2000);
+	leftArc(1000, 80);
 	
 
 	// rightArc(200, 90);
