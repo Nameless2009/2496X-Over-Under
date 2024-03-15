@@ -15,13 +15,13 @@ namespace glb {
     
     Motor slapper(P_slapper, E_MOTOR_GEAR_200, true);
 
-    ADIDigitalOut frontLeftWing('A', false);
+    ADIDigitalOut frontLeftWing('D', false);
     ADIDigitalOut frontRightWing('B', false);
-    ADIDigitalOut backLeftWing('E', false);
-    ADIDigitalOut backRightWing('G', false);
+    ADIDigitalOut backLeftWing('F', false);
+    ADIDigitalOut backRightWing('C', false);
 
-    ADIDigitalOut pto('H', true);
-    ADIDigitalOut hangPiston('F', false);
+    ADIDigitalOut pto('A', true);
+    ADIDigitalOut hangPiston('H', false);
 
     Imu inertial(P_imu);
 

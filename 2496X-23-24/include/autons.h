@@ -9,19 +9,21 @@
 using namespace pros;
 using namespace std;
 
-void drivePID(int desiredValue, int timeout=1500, string debug="off");
+void drivePID(int desiredValue, int timeout=1500, string createTask="off", int taskStart=0, int taskEnd=0, string debug="off");
 
 void turnPID(int desiredValue, int timeout=1500, string turnType="point", string debug="off");
 
 float calculatePID(float error);
 
-void rightArc(double radius, int centralDegreeTheta, int timeout=1500);
+void rightArc(double radius, double centralDegreeTheta, int timeout=1500, string createTask="off", int taskStart=0, int taskEnd=0);
 
-void leftArc(double radius, int centralDegreeTheta, int timeout=1500);
+void leftArc(double radius, double centralDegreeTheta, int timeout=1500, string createTask="off", int taskStart=0, int taskEnd=0);
 
-void offSide();
+void farSideRush();
 
-void onSide();
+void farSideNoRush();
+
+void closeSide();
 
 void autonSkills();
 

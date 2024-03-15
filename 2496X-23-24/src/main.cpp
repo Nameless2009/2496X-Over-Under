@@ -9,6 +9,11 @@ using namespace std;
 bool slapperToggle = false;
 int hangSequence = 0;
 
+bool FLwing = false;
+bool FRwing = false;
+bool BRwing = false;
+bool BLwing = false;
+
 void chassisCode(){
 	double rightstick = con.get_analog(E_CONTROLLER_ANALOG_LEFT_Y);
 	double leftstick = con.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y);
@@ -27,10 +32,10 @@ void chassisCode(){
 }
 
 void intakeCode(){
-	if (con.get_digital(E_CONTROLLER_DIGITAL_L1)){
+	if (con.get_digital(E_CONTROLLER_DIGITAL_R1)){
 		intake.move(127);
 	}
-	else if (con.get_digital(E_CONTROLLER_DIGITAL_L2)){
+	else if (con.get_digital(E_CONTROLLER_DIGITAL_R2)){
 		intake.move(-127);
 	}
 	else{
@@ -44,7 +49,7 @@ void slapperCode(){
 	}
 
 	if (slapperToggle) {
-		slapper.move(100);
+		slapper.move(95);
 	}
 	else {
 		slapper.move(0);
@@ -52,7 +57,10 @@ void slapperCode(){
 }
 
 void wingsCode(){
-	if (con.get_digital(E_CONTROLLER_DIGITAL_R1)){
+	if (con.get_digital_new_press(E_CONTROLLER_DIGITAL_B)){
+		BRwing = !BRwing;
+	}
+	if (BRwing == true) {
 		backRightWing.set_value(true);
 	}
 	else {
@@ -60,7 +68,10 @@ void wingsCode(){
 	}
 
 
-	if (con.get_digital(E_CONTROLLER_DIGITAL_R2)){
+	if (con.get_digital_new_press(E_CONTROLLER_DIGITAL_DOWN)){
+		BLwing = !BLwing;
+	}
+	if (BLwing == true) {
 		backLeftWing.set_value(true);
 	}
 	else {
@@ -68,24 +79,30 @@ void wingsCode(){
 	}
 
 
-	if (con.get_digital(E_CONTROLLER_DIGITAL_DOWN)){
-		frontLeftWing.set_value(true);
+	if (con.get_digital_new_press(E_CONTROLLER_DIGITAL_L1)){
+		FRwing = !FRwing;
 	}
-	else {
-		frontLeftWing.set_value(false);
-	}
-
-
-	if (con.get_digital(E_CONTROLLER_DIGITAL_B)){
+	if (FRwing == true) {
 		frontRightWing.set_value(true);
 	}
 	else {
 		frontRightWing.set_value(false);
 	}
+
+
+	if (con.get_digital_new_press(E_CONTROLLER_DIGITAL_L2)){
+		FLwing = !FLwing;
+	}
+	if (FLwing == true) {
+		frontLeftWing.set_value(true);
+	}
+	else {
+		frontLeftWing.set_value(false);
+	}
 }
 
 void hangCode(){
-	if (con.get_digital_new_press(E_CONTROLLER_DIGITAL_A)){
+	if (con.get_digital_new_press(E_CONTROLLER_DIGITAL_Y)){
 		hangSequence++;
 	}
 
@@ -103,12 +120,20 @@ void hangCode(){
 	else {
 		hangSequence = 0;
 	}
+	
 }
 
 
-bool onside = false;
-bool offside = false;
+bool farsiderush = false;
+bool farsidenorush = false;
+bool closeside = false;
 bool skillsAuton = false;
+bool skipAuton = false;
+
+bool rightclick = false;
+bool leftclick = false;
+int selection = 0;
+bool centerclick = false;
 
 /**
  * A callback function for LLEMU's center button.
@@ -118,42 +143,15 @@ bool skillsAuton = false;
  */
 void on_center_button()
 {
-	offside = !offside;
-	if (offside)
-	{
-		lcd::clear();
-		lcd::set_text(3, "OFFSIDE selected.");
-	}
-	else
-	{
-		lcd::clear_line(3);
-	}
+	centerclick = !centerclick;
 }
 void on_left_button()
 {
-	onside = !onside;
-	if (onside)
-	{
-		lcd::clear();
-		lcd::set_text(3, "ONSIDE selected.");
-	}
-	else
-	{
-		lcd::clear_line(3);
-	}
+	//nothing for now
 }
 void on_right_button()
 {
-	skillsAuton = !skillsAuton;
-	if (skillsAuton)
-	{
-		lcd::clear();
-		lcd::set_text(3, "AUTON SKILLS selected.");
-	}
-	else
-	{
-		lcd::clear_line(3);
-	}
+	rightclick = true;
 }
 
 /**
@@ -164,16 +162,69 @@ void on_right_button()
  */
 void initialize()
 {
-	pros::lcd::initialize();
-	
-	pros::lcd::set_text(1, "Left Button: ONSIDE");
-	pros::lcd::set_text(2, "Center Button: OFFSIDE");
-	pros::lcd::set_text(3, "Right Button: SKILLS AUTON");
-	pros::lcd::set_text(4, "Click Nothing: SKIP AUTON");
+	// pros::lcd::initialize();
 
-	pros::lcd::register_btn0_cb(on_left_button);
-	pros::lcd::register_btn1_cb(on_center_button);
-	pros::lcd::register_btn2_cb(on_right_button);
+	// pros::lcd::register_btn0_cb(on_left_button);
+	// pros::lcd::register_btn1_cb(on_center_button);
+	// pros::lcd::register_btn2_cb(on_right_button);
+
+	// int counter = 0;
+
+	// while (1){
+	// 	if (rightclick == true){
+	// 		selection++;
+	// 		rightclick = false;
+	// 	}
+		
+	// 	if (centerclick == true){
+	// 		if (selection == 0){
+	// 			skipAuton = true;
+	// 		}
+	// 		else if (selection == 1){
+	// 			farsiderush = true;
+	// 		}
+	// 		else if (selection == 2){
+	// 			farsidenorush = true;
+	// 		}
+	// 		else if (selection == 3){
+	// 			closeside = true;
+	// 		}
+	// 		else if (selection == 4){
+	// 			skillsAuton = true;
+	// 		}
+
+	// 		counter++; //timer start
+	// 	}
+
+	// 	if (selection == 0){
+	// 		pros::lcd::clear_line(0);
+	// 		pros::lcd::set_text(0, "Nothing Selected, Skip Auto");
+	// 	}
+	// 	else if (selection == 1){
+	// 		pros::lcd::clear_line(0);
+	// 		pros::lcd::set_text(0, "Far Side Rush Auto Selected");
+	// 	}
+	// 	else if (selection == 2){
+	// 		pros::lcd::clear_line(0);
+	// 		pros::lcd::set_text(0, "Far Side No Rush Auto Selected");
+	// 	}
+	// 	else if (selection == 3){
+	// 		pros::lcd::clear_line(0);
+	// 		pros::lcd::set_text(0, "Close Side Auto Selected");
+	// 	}
+	// 	else if (selection == 4){
+	// 		pros::lcd::clear_line(0);
+	// 		pros::lcd::set_text(0, "Skills Auto Selected");
+	// 	}
+	// 	else {
+	// 		selection = 0;
+	// 	}
+
+	// 	delay(20);
+	// 	if (counter >= 250){
+	// 		break; //break after delay
+	// 	}
+	// }
 
 	chassis.set_brake_modes(E_MOTOR_BRAKE_COAST);
 }
@@ -211,11 +262,14 @@ void autonomous() {
 	if (skillsAuton){
 		autonSkills();
 	}
-	else if (onside){
-		onSide();
+	else if (farsiderush){
+		farSideRush();
 	}
-	else if (offside){
-		offSide();
+	else if (farsidenorush){
+		farSideNoRush();
+	}
+	else if (closeside){
+		closeSide();
 	}
 	else { //if nothing was clicked
 		skipAutonomous();      
@@ -238,7 +292,6 @@ void autonomous() {
  */
 void opcontrol()
 {
-
 	while (true)
 	{
 		
@@ -246,6 +299,7 @@ void opcontrol()
 		intakeCode();
 		slapperCode();
 		wingsCode();
+		hangCode();
 
 	}
 }
