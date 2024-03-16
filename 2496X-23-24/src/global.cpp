@@ -17,10 +17,10 @@ namespace glb {
 
     ADIDigitalOut frontLeftWing('D', false);
     ADIDigitalOut frontRightWing('B', false);
-    ADIDigitalOut backLeftWing('F', false);
+    ADIDigitalOut backLeftWing('E', false);
     ADIDigitalOut backRightWing('C', false);
 
-    ADIDigitalOut pto('A', true);
+    ADIDigitalOut pto('A', false);
     ADIDigitalOut hangPiston('H', false);
 
     Imu inertial(P_imu);

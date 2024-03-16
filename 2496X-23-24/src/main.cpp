@@ -33,10 +33,10 @@ void chassisCode(){
 
 void intakeCode(){
 	if (con.get_digital(E_CONTROLLER_DIGITAL_R1)){
-		intake.move(127);
-	}
-	else if (con.get_digital(E_CONTROLLER_DIGITAL_R2)){
 		intake.move(-127);
+	}
+	else if (con.get_digital(E_CONTROLLER_DIGITAL_L1)){
+		intake.move(127);
 	}
 	else{
 		intake.move(0);
@@ -79,7 +79,7 @@ void wingsCode(){
 	}
 
 
-	if (con.get_digital_new_press(E_CONTROLLER_DIGITAL_L1)){
+	if (con.get_digital_new_press(E_CONTROLLER_DIGITAL_R2)){
 		FRwing = !FRwing;
 	}
 	if (FRwing == true) {
@@ -110,9 +110,10 @@ void hangCode(){
 		hangPiston.set_value(true);
 	}
 	else if (hangSequence == 2){
-		pto.set_value(false);
+		pto.set_value(true);
 	}
 	else if (hangSequence == 3){
+		hangPiston.set_value(false);
 		chassis.move(127);
 		delay(1000);
 		chassis.move(0);
@@ -143,15 +144,15 @@ bool centerclick = false;
  */
 void on_center_button()
 {
-	centerclick = !centerclick;
+	farsiderush = true;
 }
 void on_left_button()
 {
-	//nothing for now
+	closeside = true;
 }
 void on_right_button()
 {
-	rightclick = true;
+	skillsAuton = true;
 }
 
 /**
@@ -162,69 +163,15 @@ void on_right_button()
  */
 void initialize()
 {
-	// pros::lcd::initialize();
+	pros::lcd::initialize();
 
-	// pros::lcd::register_btn0_cb(on_left_button);
-	// pros::lcd::register_btn1_cb(on_center_button);
-	// pros::lcd::register_btn2_cb(on_right_button);
+	pros::lcd::register_btn0_cb(on_left_button);
+	pros::lcd::register_btn1_cb(on_center_button);
+	pros::lcd::register_btn2_cb(on_right_button);
 
-	// int counter = 0;
-
-	// while (1){
-	// 	if (rightclick == true){
-	// 		selection++;
-	// 		rightclick = false;
-	// 	}
-		
-	// 	if (centerclick == true){
-	// 		if (selection == 0){
-	// 			skipAuton = true;
-	// 		}
-	// 		else if (selection == 1){
-	// 			farsiderush = true;
-	// 		}
-	// 		else if (selection == 2){
-	// 			farsidenorush = true;
-	// 		}
-	// 		else if (selection == 3){
-	// 			closeside = true;
-	// 		}
-	// 		else if (selection == 4){
-	// 			skillsAuton = true;
-	// 		}
-
-	// 		counter++; //timer start
-	// 	}
-
-	// 	if (selection == 0){
-	// 		pros::lcd::clear_line(0);
-	// 		pros::lcd::set_text(0, "Nothing Selected, Skip Auto");
-	// 	}
-	// 	else if (selection == 1){
-	// 		pros::lcd::clear_line(0);
-	// 		pros::lcd::set_text(0, "Far Side Rush Auto Selected");
-	// 	}
-	// 	else if (selection == 2){
-	// 		pros::lcd::clear_line(0);
-	// 		pros::lcd::set_text(0, "Far Side No Rush Auto Selected");
-	// 	}
-	// 	else if (selection == 3){
-	// 		pros::lcd::clear_line(0);
-	// 		pros::lcd::set_text(0, "Close Side Auto Selected");
-	// 	}
-	// 	else if (selection == 4){
-	// 		pros::lcd::clear_line(0);
-	// 		pros::lcd::set_text(0, "Skills Auto Selected");
-	// 	}
-	// 	else {
-	// 		selection = 0;
-	// 	}
-
-	// 	delay(20);
-	// 	if (counter >= 250){
-	// 		break; //break after delay
-	// 	}
-	// }
+	pros::lcd::print(0, "left button: close side");
+	pros::lcd::print(1, "center button: far side rush");
+	pros::lcd::print(2, "right button: skills auto");
 
 	chassis.set_brake_modes(E_MOTOR_BRAKE_COAST);
 }
@@ -272,7 +219,7 @@ void autonomous() {
 		closeSide();
 	}
 	else { //if nothing was clicked
-		skipAutonomous();      
+		skipAutonomous(); 
 	}
 	
 }

@@ -47,7 +47,7 @@ class Point {
 		}
 };
 
-void drivePID(int desiredValue, int timeout=1500, string createTask="off", int taskStart=0, int taskEnd=0, string debug="off")
+void drivePID(int desiredValue, int timeout=1500, string createTask="off", int taskStart=0, int taskEnd=0, int chainSpeed = 0, string debug="off")
 {
 	bool enableDrivePID = true;
 	int prevError = 0;
@@ -57,6 +57,8 @@ void drivePID(int desiredValue, int timeout=1500, string createTask="off", int t
 	double kP;
 	double kI;
 	double kD;
+
+	bool chain;
 
 	double maxI = 500;
 	
@@ -92,6 +94,13 @@ void drivePID(int desiredValue, int timeout=1500, string createTask="off", int t
 
 	bool taskStarted = false;
 	bool taskEnded = false;
+
+	if (chainSpeed == 0){
+		chain = false;
+	}
+	else {
+		chain = true;
+	}
 
 
 	while (enableDrivePID)
@@ -161,6 +170,8 @@ void drivePID(int desiredValue, int timeout=1500, string createTask="off", int t
 
 		prevError = error;
 
+		
+
 		if (abs(error) < 30)
 		{
 			count++;
@@ -184,44 +195,56 @@ void drivePID(int desiredValue, int timeout=1500, string createTask="off", int t
 			}
 		}
 
+		if (chain == true && abs(speed) <= chainSpeed){
+			enableDrivePID = false;
+		}
+
 		if (time >= taskStart && taskStarted == false){
 			if (createTask == "frontWings"){
 				frontLeftWing.set_value(true);
 				frontRightWing.set_value(true);
-				taskStarted == true;
+				taskStarted = true;
 			}
 			else if (createTask == "backWings"){
 				backLeftWing.set_value(true);
 				backRightWing.set_value(true);
-				taskStarted == true;
+				taskStarted = true;
+			}
+			else if (createTask == "frontRightWing"){
+				frontRightWing.set_value(true);
+				taskStarted = true;
 			}
 			else if (createTask == "reverseIntake"){
 				intake.move(127);
-				taskStarted == true;
+				taskStarted = true;
 			}
 			else if (createTask == "forwardIntake"){
 				intake.move(-127);
-				taskStarted == true;
+				taskStarted = true;
 			}
 		}
 		if (time >= taskEnd && taskEnded == false){
 			if (createTask == "frontWings"){
 				frontLeftWing.set_value(false);
 				frontRightWing.set_value(false);
-				taskEnded == true;
+				taskEnded = true;
 			}
 			else if (createTask == "backWings"){
 				backLeftWing.set_value(false);
 				backRightWing.set_value(false);
-				taskEnded == true;
+				taskEnded = true;
+			}
+			else if (createTask == "frontRightWing"){
+				frontRightWing.set_value(false);
+				taskEnded = true;
 			}
 			else if (createTask == "reverseIntake"){
 				intake.move(0);
-				taskEnded == true;
+				taskEnded = true;
 			}
 			else if (createTask == "forwardIntake"){
 				intake.move(0);
-				taskEnded == true;
+				taskEnded = true;
 			}
 		}		
 
@@ -479,10 +502,12 @@ float calculatePID2(float error){
 }
 
 
-void rightArc(double radius, double centralDegreeTheta, int timeout=1500, string createTask="off", int taskStart=0, int taskEnd=0){
+void rightArc(double radius, double centralDegreeTheta, int timeout=1500, string createTask="off", int taskStart=0, int taskEnd=0, int chainSpeed=0){
 
 	double rightArc = (centralDegreeTheta / 360)*2*M_PI*(radius + 530);
 	double leftArc = (centralDegreeTheta / 360)*2*M_PI*(radius);
+
+	bool chain = true;
 
 	//double speedProp = rightArc/leftArc;
 
@@ -498,6 +523,13 @@ void rightArc(double radius, double centralDegreeTheta, int timeout=1500, string
 	double init_heading = inertial.get_heading(); 
 	if (init_heading > 180){
 		init_heading = init_heading - 360;
+	}
+
+	if (chainSpeed == 0){
+		chain = false;
+	}
+	else {
+		chain = true;
 	}
 
 	while(1){
@@ -541,6 +573,10 @@ void rightArc(double radius, double centralDegreeTheta, int timeout=1500, string
 			count++;
 		}
 		if (count >= 2 || time > timeout){
+			break;
+		}
+
+		if (chain == true && abs(calculatePID(left_error)) <= chainSpeed && abs(calculatePID2(right_error)) <= chainSpeed){
 			break;
 		}
 
@@ -592,11 +628,13 @@ void rightArc(double radius, double centralDegreeTheta, int timeout=1500, string
 	chassis.move(0);
 }
 
-void leftArc(double radius, double centralDegreeTheta, int timeout=1500, string createTask="off", int taskStart=0, int taskEnd=0){
+void leftArc(double radius, double centralDegreeTheta, int timeout=1500, string createTask="off", int taskStart=0, int taskEnd=0, int chainSpeed=0){
 
 
 	double rightArc = (centralDegreeTheta / 360)*2*M_PI*(radius);
 	double leftArc = (centralDegreeTheta / 360)*2*M_PI*(radius + 530);
+
+	bool chain;
 
 	//double speedProp = leftArc/rightArc;
 
@@ -615,6 +653,13 @@ void leftArc(double radius, double centralDegreeTheta, int timeout=1500, string 
 	bool taskEnded = false;
 	
 	// con.clear();
+
+	if (chainSpeed == 0){
+		chain = false;
+	}
+	else{
+		chain = true;
+	}
 
 	while(1){
 
@@ -657,6 +702,10 @@ void leftArc(double radius, double centralDegreeTheta, int timeout=1500, string 
 			count++;
 		}
 		if (count >= 2 || time > timeout){
+			break;
+		}
+
+		if (chain == true && abs(calculatePID(left_error)) <= chainSpeed && abs(calculatePID2(right_error)) <= chainSpeed){
 			break;
 		}
 
@@ -767,17 +816,153 @@ void leftArc(double radius, double centralDegreeTheta, int timeout=1500, string 
 
 void closeSide()
 {
-	
+	//awp
+	hangPiston.set_value(true);
+	delay(50);
+	hangPiston.set_value(false);
+	inertial.set_heading(15);
+	intake.move(-127);
+	drivePID(2150);
+	drivePID(-1200);
+	leftArc(250, -120);
+	backRightWing.set_value(true);
+	delay(800);
+	leftArc(200, 50);
+	turnPID(75);
+	delay(1000);
+	turnPID(105);
+	intake.move(127);
+	drivePID(1700);
 }
 
 void autonSkills()
 {
 	
+	//prog skills - derrae
+	inertial.set_heading(305);
+	rightArc(1500, -58);
+	rightArc(160, 122);
+	drivePID(-330);
+	backLeftWing.set_value(true);
+	slapper.move(100);
+	delay(24000);
+	slapper.move(0);
+	backLeftWing.set_value(false);
+	intake.move(-127);
+	drivePID(2200);
+	// rightArc(2000, 70, 3000, "frontWings", 200, 30000);
+	// frontLeftWing.set_value(true);
+	// frontRightWing.set_value(true);
+	turnPID(90, 15000);
+	intake.move(127);
+	frontLeftWing.set_value(true);
+	frontRightWing.set_value(true);
+	drivePID(3000);
+	drivePID(-500);
+	frontLeftWing.set_value(false);
+	frontRightWing.set_value(false);
+	turnPID(160);
+	drivePID(1000, 1500, "off", 0, 0, 20);
+	leftArc(150, 160);
+	turnPID(0);
+	intake.move(127);
+	drivePID(1000);
+	frontLeftWing.set_value(true);
+	frontRightWing.set_value(true);
+	drivePID(2400,3000, "off", 0, 0, 20); // short barrier starts here
+	frontRightWing.set_value(false);
+	leftArc(1100, 90);
+	turnPID(-80);
+	drivePID(500, 500);
+	drivePID(-500);
+	drivePID(800, 800);
+	drivePID(-300);
+	turnPID(0);
+	leftArc(400, -90);
+	drivePID(-400);
+	frontLeftWing.set_value(false);
+	frontRightWing.set_value(false);
+	drivePID(500);
+	turnPID(160);
+	intake.move(-127);
+	drivePID(1000);
+	turnPID(-90);
+	frontLeftWing.set_value(true);
+	frontRightWing.set_value(true);
+	intake.move(127);
+	drivePID(1100);
+	turnPID(180);
+	frontLeftWing.set_value(false);
+	frontRightWing.set_value(false);
+	backRightWing.set_value(true);
+	drivePID(-2000);
+	backRightWing.set_value(false);
+	drivePID(1500);
+	turnPID(-90);
+	drivePID(1100);
+	turnPID(180);
+	backLeftWing.set_value(true);
+	drivePID(-2000);
+	backLeftWing.set_value(false);
+	drivePID(500);
+	turnPID(-90);
+	drivePID(1600);
+	rightArc(125,160);
+	rightArc(1100,50);
+	drivePID(-500);
+	drivePID(800);
+	turnPID(180);
+	drivePID(-2000);
+	drivePID(1500);
+	turnPID(-100);
+	drivePID(2000);
+	turnPID(0);
+	frontLeftWing.set_value(true);
+	frontRightWing.set_value(true);
+	leftArc(1100, 80, 1500, "off", 0, 0, 20);
+	drivePID(1000);
+	rightArc(1000, -90);
+	turnPID(-180);
 }
 
 void farSideRush()
 {
-	
+	//6ball
+	frontRightWing.set_value(true);
+	inertial.set_heading(348);
+	hangPiston.set_value(true);
+	delay(50);
+	hangPiston.set_value(false);
+	intake.move(-127);
+	drivePID(2500, 2000, "frontRightWing", 0, 200);
+	drivePID(-2700);
+	turnPID(50);
+	intake.move(127);
+	delay(300);
+	turnPID(-91);
+	intake.move(-127);
+	drivePID(1350);
+	drivePID(-1400, 1500, "off", 0, 0, 20);
+	backLeftWing.set_value(true);
+	rightArc(700, -90);
+	drivePID(-800, 700);
+	drivePID(300);
+	turnPID(0);
+	intake.move(127);
+	drivePID(800, 600);
+	drivePID(-800);
+	turnPID(-70);
+	intake.move(-127);
+	drivePID(2100);
+	turnPID(60);
+	drivePID(800);
+	intake.move(127);
+	turnPID(-58);
+	drivePID(500);
+	intake.move(-127);
+	turnPID(90);
+	drivePID(2000, 2000, "frontWings", 0, 10000);
+
 }
 
 void farSideNoRush()
@@ -787,54 +972,11 @@ void farSideNoRush()
 
 void skipAutonomous()
 {
-	//onside
-	// intake.move(-127); //intake is reversed for some reason
-	// drivePID(3000);
-	// turnPID(-60);
-	// inertial.set_heading(0);
-	// drivePID(-1500);
-	// drivePID(400);
-	// turnPID(-90);
-	// drivePID(2500);
-	// turnPID(-100);
-	// intake.move(127);
-	// delay(150);
-	// turnPID(90);
-	// intake.move(-127);
-	// drivePID(1300);
-	// turnPID(3);
-	// drivePID(-1500);
-	// rightArc(10, -500);
-	// rightArc(7, 700);
-	// intake.move(127);
-	
-	//6ball
-	// intake.move(-127);
-	// drivePID(2500);
-	// drivePID(-2800);
-	// turnPID(60);
-	// intake.move(127);
-	// delay(300);
-	// turnPID(-76);
-	// inertial.tare();
-	// intake.move(-127);
-	// drivePID(1270);
-	// drivePID(-1280);
-	// backLeftWing.set_value(true);
-	// rightArc(900, -4);
-	// drivePID(500);
-	// turnPID(180);
-	// intake.move(127);
-	// delay(200);
-	// drivePID(1000, 500);
-	// drivePID(-800);
-	// turnPID(-70);
-	// drivePID(2000);
 
-	//prog skills
+	//prog skills - derrae
 	inertial.set_heading(305);
 	rightArc(1500, -58);
-	rightArc(170, 120);
+	rightArc(160, 122);
 	drivePID(-330);
 	backLeftWing.set_value(true);
 	slapper.move(100);
@@ -855,20 +997,20 @@ void skipAutonomous()
 	frontLeftWing.set_value(false);
 	frontRightWing.set_value(false);
 	turnPID(160);
-	drivePID(1000);
+	drivePID(1000, 1500, "off", 0, 0, 20);
 	leftArc(150, 160);
 	turnPID(0);
 	intake.move(127);
 	drivePID(1000);
 	frontLeftWing.set_value(true);
 	frontRightWing.set_value(true);
-	drivePID(2400,3000); // short barrier starts here
+	drivePID(2400,3000, "off", 0, 0, 20); // short barrier starts here
 	frontRightWing.set_value(false);
 	leftArc(1100, 90);
 	turnPID(-80);
-	drivePID(500);
+	drivePID(500, 500);
 	drivePID(-500);
-	drivePID(800);
+	drivePID(800, 800);
 	drivePID(-300);
 	turnPID(0);
 	leftArc(400, -90);
@@ -876,62 +1018,41 @@ void skipAutonomous()
 	frontLeftWing.set_value(false);
 	frontRightWing.set_value(false);
 	drivePID(500);
-	turnPID(170);
+	turnPID(160);
 	intake.move(-127);
-	drivePID(800);
+	drivePID(1000);
 	turnPID(-90);
+	frontLeftWing.set_value(true);
+	frontRightWing.set_value(true);
 	intake.move(127);
-	drivePID(800);
+	drivePID(1100);
 	turnPID(180);
+	frontLeftWing.set_value(false);
+	frontRightWing.set_value(false);
+	backRightWing.set_value(true);
 	drivePID(-2000);
+	backRightWing.set_value(false);
 	drivePID(1500);
 	turnPID(-90);
-	drivePID(700);
+	drivePID(1100);
 	turnPID(180);
+	backLeftWing.set_value(true);
 	drivePID(-2000);
-	drivePID(1500);
+	backLeftWing.set_value(false);
+	drivePID(500);
 	turnPID(-90);
+	drivePID(1600);
+	rightArc(125,160);
+	rightArc(1100,50);
+	drivePID(-500);
 	drivePID(800);
 	turnPID(180);
 	drivePID(-2000);
 	drivePID(1500);
 	turnPID(-100);
-	drivePID(800);
-	rightArc(100, 160);
+	drivePID(2600);
+	turnPID(0);
 	frontLeftWing.set_value(true);
 	frontRightWing.set_value(true);
-	leftArc(1000, 80);
-	
-
-	// rightArc(200, 90);
-	// drivePID(1000);
-	// drivePID(-1000);
-	// intake.move(127);
-	// drivePID(500);
-	// frontLeftWing.set_value(true);
-	// rightArc(300, 90);
-	// frontLeftWing.set_value(false);
-	// drivePID(2000);
-	// drivePID(-1500);
-	// turnPID(-90);
-	// frontRightWing.set_value(true);
-	// frontLeftWing.set_value(true);
-	// rightArc(200, 90);
-	// frontLeftWing.set_value(false);
-	// frontRightWing.set_value(false);
-	// drivePID(2500);
-	// drivePID(-1000);
-	// turnPID(-150);
-	// rightArc(150, 180);
-	// frontRightWing.set_value(true);
-	// frontLeftWing.set_value(true);
-	// leftArc(300, 60);
-	// drivePID(1000);
-	// drivePID(-1000);
-	// drivePID(500);
-	// leftArc(1000, -90);
-
-
-
-
+	rightArc(1500, 90);
 }
