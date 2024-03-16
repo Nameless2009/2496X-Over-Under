@@ -124,6 +124,16 @@ void hangCode(){
 	
 }
 
+void skillsMacro(){
+	if(con.get_digital_new_press(E_CONTROLLER_DIGITAL_RIGHT)){
+		inertial.set_heading(305);
+		rightArc(1500, -58);
+		rightArc(160, 122);
+		drivePID(-330);
+		backLeftWing.set_value(true);
+	}
+}
+
 
 bool farsiderush = false;
 bool farsidenorush = false;
@@ -247,6 +257,7 @@ void opcontrol()
 		slapperCode();
 		wingsCode();
 		hangCode();
+		skillsMacro();
 
 	}
 }

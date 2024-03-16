@@ -832,13 +832,16 @@ void closeSide()
 	delay(1000);
 	turnPID(105);
 	intake.move(127);
+	backRightWing.set_value(false);
 	drivePID(1700);
 }
 
 void autonSkills()
 {
-	
 	//prog skills - derrae
+	hangPiston.set_value(true);
+	delay(50);
+	hangPiston.set_value(false);
 	inertial.set_heading(305);
 	rightArc(1500, -58);
 	rightArc(160, 122);
@@ -906,23 +909,12 @@ void autonSkills()
 	backLeftWing.set_value(false);
 	drivePID(500);
 	turnPID(-90);
-	drivePID(1600);
-	rightArc(125,160);
-	rightArc(1100,50);
-	drivePID(-500);
-	drivePID(800);
-	turnPID(180);
-	drivePID(-2000);
-	drivePID(1500);
-	turnPID(-100);
-	drivePID(2000);
+	drivePID(2400);
 	turnPID(0);
-	frontLeftWing.set_value(true);
-	frontRightWing.set_value(true);
-	leftArc(1100, 80, 1500, "off", 0, 0, 20);
-	drivePID(1000);
-	rightArc(1000, -90);
-	turnPID(-180);
+	rightArc(900,90);
+	drivePID(2000, 700);
+	drivePID(-500);
+	drivePID(3000);
 }
 
 void farSideRush()
@@ -941,27 +933,23 @@ void farSideRush()
 	delay(300);
 	turnPID(-91);
 	intake.move(-127);
-	drivePID(1350);
-	drivePID(-1400, 1500, "off", 0, 0, 20);
+	drivePID(1300);
+	drivePID(-1350, 1500, "off", 0, 0, 20);
 	backLeftWing.set_value(true);
 	rightArc(700, -90);
 	drivePID(-800, 700);
-	drivePID(300);
+	drivePID(600);
 	turnPID(0);
 	intake.move(127);
+	delay(80);
 	drivePID(800, 600);
 	drivePID(-800);
 	turnPID(-70);
 	intake.move(-127);
 	drivePID(2100);
 	turnPID(60);
-	drivePID(800);
 	intake.move(127);
-	turnPID(-58);
-	drivePID(500);
-	intake.move(-127);
-	turnPID(90);
-	drivePID(2000, 2000, "frontWings", 0, 10000);
+	drivePID(2500, 2000, "frontWings", 0, 10000);
 
 }
 
@@ -973,86 +961,4 @@ void farSideNoRush()
 void skipAutonomous()
 {
 
-	//prog skills - derrae
-	inertial.set_heading(305);
-	rightArc(1500, -58);
-	rightArc(160, 122);
-	drivePID(-330);
-	backLeftWing.set_value(true);
-	slapper.move(100);
-	//delay(24000);
-	slapper.move(0);
-	backLeftWing.set_value(false);
-	intake.move(-127);
-	drivePID(2200);
-	// rightArc(2000, 70, 3000, "frontWings", 200, 30000);
-	// frontLeftWing.set_value(true);
-	// frontRightWing.set_value(true);
-	turnPID(90, 15000);
-	intake.move(127);
-	frontLeftWing.set_value(true);
-	frontRightWing.set_value(true);
-	drivePID(3000);
-	drivePID(-500);
-	frontLeftWing.set_value(false);
-	frontRightWing.set_value(false);
-	turnPID(160);
-	drivePID(1000, 1500, "off", 0, 0, 20);
-	leftArc(150, 160);
-	turnPID(0);
-	intake.move(127);
-	drivePID(1000);
-	frontLeftWing.set_value(true);
-	frontRightWing.set_value(true);
-	drivePID(2400,3000, "off", 0, 0, 20); // short barrier starts here
-	frontRightWing.set_value(false);
-	leftArc(1100, 90);
-	turnPID(-80);
-	drivePID(500, 500);
-	drivePID(-500);
-	drivePID(800, 800);
-	drivePID(-300);
-	turnPID(0);
-	leftArc(400, -90);
-	drivePID(-400);
-	frontLeftWing.set_value(false);
-	frontRightWing.set_value(false);
-	drivePID(500);
-	turnPID(160);
-	intake.move(-127);
-	drivePID(1000);
-	turnPID(-90);
-	frontLeftWing.set_value(true);
-	frontRightWing.set_value(true);
-	intake.move(127);
-	drivePID(1100);
-	turnPID(180);
-	frontLeftWing.set_value(false);
-	frontRightWing.set_value(false);
-	backRightWing.set_value(true);
-	drivePID(-2000);
-	backRightWing.set_value(false);
-	drivePID(1500);
-	turnPID(-90);
-	drivePID(1100);
-	turnPID(180);
-	backLeftWing.set_value(true);
-	drivePID(-2000);
-	backLeftWing.set_value(false);
-	drivePID(500);
-	turnPID(-90);
-	drivePID(1600);
-	rightArc(125,160);
-	rightArc(1100,50);
-	drivePID(-500);
-	drivePID(800);
-	turnPID(180);
-	drivePID(-2000);
-	drivePID(1500);
-	turnPID(-100);
-	drivePID(2600);
-	turnPID(0);
-	frontLeftWing.set_value(true);
-	frontRightWing.set_value(true);
-	rightArc(1500, 90);
 }
