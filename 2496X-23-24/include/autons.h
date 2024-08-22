@@ -29,5 +29,7 @@ void autonSkills();
 
 void skipAutonomous();
 
+void skillsMacro();
+
 
 #endif

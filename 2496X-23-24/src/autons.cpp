@@ -836,6 +836,17 @@ void closeSide()
 	drivePID(1700);
 }
 
+void skillsMacro(){
+	inertial.set_heading(305);
+	rightArc(1500, -58);
+	rightArc(160, 122);
+	drivePID(-330);
+	backLeftWing.set_value(true);
+	slapper.move(100);
+	frontLeftWing.set_value(true);
+	frontLeftWing.set_value(true);
+}
+
 void autonSkills()
 {
 	//prog skills - derrae
@@ -892,7 +903,7 @@ void autonSkills()
 	turnPID(-90);
 	frontLeftWing.set_value(true);
 	frontRightWing.set_value(true);
-	intake.move(127);
+	intake.move(100);
 	drivePID(1100);
 	turnPID(180);
 	frontLeftWing.set_value(false);
@@ -949,7 +960,10 @@ void farSideRush()
 	drivePID(2100);
 	turnPID(60);
 	intake.move(127);
-	drivePID(2500, 2000, "frontWings", 0, 10000);
+	drivePID(2500, 800, "frontWings", 0, 10000);
+	drivePID(-1000);
+
+
 
 }
 
